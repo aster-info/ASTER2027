@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- ======================================================== -->
-    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE    ENTREE       -->
-    <!-- ======================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contrôle d'Entrée - ASTER</title>
-    <!-- Intégration de la bibliothèque de scan QR Code -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body {
@@ -59,14 +55,16 @@
             line-height: 1.5;
             display: none;
         }
+        /* Vert foncé pour une validation réussie */
         .success-bg {
             background-color: #059669;
         }
         .error-bg {
             background-color: #ef4444;
         }
+        /* Vert standard pour "déjà enregistré" */
         .warning-bg {
-            background-color: #f97316;
+            background-color: #10b981;
             color: white;
         }
         .loading-bg {
@@ -104,26 +102,15 @@
 </head>
 <body>
 
-    <!-- ======================================================== -->
-    <!-- 2. CONTENEUR PRINCIPAL DE LA CARTE                       -->
-    <!-- ======================================================== -->
     <div class="card">
         <img src="logo.png" alt="Logo ASTER" class="logo">
         <h3>Contrôle des Entrées</h3>
 
-        <!-- ============================================================================== -->
-        <!-- [BLOC HTML] : Étape 1 - Le Scanner Caméra -->
-        <!-- Contient la zone vidéo du lecteur QR code et le texte d'aide associé. -->
-        <!-- ============================================================================== -->
         <div id="scanner-container">
             <div id="reader"></div>
             <p style="font-size: 14px; color: #666;">Scannez le badge du membre pour valider l'entrée</p>
         </div>
 
-        <!-- ============================================================================== -->
-        <!-- [BLOC HTML] : Étape 2 - Le Grand Bloc de Résultat -->
-        <!-- Affiche la photo du membre, la boîte de statut dynamique et la zone d'actions. -->
-        <!-- ============================================================================== -->
         <div id="result-container" style="display: none;">
             <img id="member-photo" src="" alt="Photo du membre">
             <div id="message-box" class="status-box"></div>
@@ -131,35 +118,22 @@
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- 3. LOGIQUE JAVASCRIPT                                    -->
-    <!-- ======================================================== -->
     <script>
         let html5QrCode;
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
 
-        /**
-         * ==============================================================================
-         * [BLOC JS] : Fonction de vérification de l'ID scanné auprès du serveur Google Apps Script
-         * Gère l'affichage du chargement, l'appel fetch, l'affichage de la photo du membre,
-         * et l'affichage dans l'ordre : Nom, ID, Titre, puis Message/Statut en dessous.
-         * ==============================================================================
-         */
         function verifierID(memberId) {
-            // [BLOC ISOLÉ] : Passage de la vue scanner à la vue résultat
             document.getElementById('scanner-container').style.display = 'none';
             const resultContainer = document.getElementById('result-container');
             resultContainer.style.display = 'block';
             
             document.getElementById('member-photo').style.display = 'none';
 
-            // [BLOC ISOLÉ] : État de chargement initial dans la boîte de message
             const msgBox = document.getElementById('message-box');
             msgBox.className = "status-box loading-bg";
             msgBox.style.display = "block";
             msgBox.innerHTML = "Vérification de l'entrée en cours...";
 
-            // Requête vers l'API Google Apps Script avec l'action 'entree'
             fetch(`${scriptUrl}?code=${encodeURIComponent(memberId)}&action=entree`)
                 .then(response => response.json())
                 .then(data => {
@@ -167,7 +141,6 @@
                     actionArea.innerHTML = '';
 
                     const imgElem = document.getElementById('member-photo');
-                    // [BLOC ISOLÉ] : Gestion de l'affichage de la photo du membre si elle existe
                     if (data.photo && data.photo.trim() !== "") {
                         imgElem.src = data.photo;
                         imgElem.style.display = 'inline-block';
@@ -175,12 +148,10 @@
                         imgElem.style.display = 'none';
                     }
 
-                    // [BLOC ISOLÉ] : Préparation des variables d'affichage (Nom, Titre, ID)
                     const nomMembre = data.name || "";
                     const idMembre = memberId;
                     const titreMembre = data.titre ? `<span style="font-size: 13px; font-style: italic; opacity: 0.9; display: block; margin-top: 2px;">${data.titre}</span>` : "";
 
-                    // [BLOC ISOLÉ] : Cas 1 - Entrée validée avec succès
                     if (data.status === "ok") {
                         msgBox.className = "status-box success-bg";
                         msgBox.innerHTML = `
@@ -189,19 +160,14 @@
                             ${titreMembre}
                             <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">✓ ENTRÉE VALIDÉE</div>
                         `;
-                    
-                    // [BLOC ISOLÉ] : Cas 2 - Membre déjà enregistré
                     } else if (data.status === "deja_enregistre") {
                         msgBox.className = "status-box warning-bg";
                         msgBox.innerHTML = `
                             <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
                             <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
                             ${titreMembre}
-                            <!-- [MODIFICATION] : Point d'exclamation retiré du texte d'avertissement -->
-                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">⚠️ Ce membre est déjà enregistré comme présent</div>
+                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">ℹ️ Ce membre est déjà enregistré comme présent</div>
                         `;
-                    
-                    // [BLOC ISOLÉ] : Cas 3 - Autres erreurs ou messages renvoyés par l'API
                     } else {
                         msgBox.className = "status-box warning-bg";
                         const messageErreur = data.message || data.error || "Erreur lors du contrôle.";
@@ -213,7 +179,6 @@
                         `;
                     }
 
-                    // Bouton de réinitialisation pour scanner un autre badge
                     const btn = document.createElement('button');
                     btn.className = "btn btn-blue";
                     btn.innerText = "Scanner un autre";
@@ -221,7 +186,6 @@
                     actionArea.appendChild(btn);
                 })
                 .catch(error => {
-                    // [BLOC ISOLÉ] : Gestion de l'erreur de connexion au serveur
                     msgBox.className = "status-box error-bg";
                     msgBox.innerHTML = "❌ Erreur de connexion au serveur.";
                     const btn = document.createElement('button');
@@ -233,12 +197,6 @@
                 });
         }
 
-        /**
-         * ==============================================================================
-         * [BLOC JS] : Initialisation de la page au chargement (window.onload)
-         * Vérifie si un paramètre d'URL est présent ou démarre le scanner de la caméra.
-         * ==============================================================================
-         */
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const memberId = urlParams.get('id') || urlParams.get('code');
