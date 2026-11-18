@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- ======================================================== -->
+    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE    ENTREE       -->
+    <!-- ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle d'Entrée - ASTER</title>
+    <!-- Intégration de la bibliothèque de scan QR Code -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .card {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .logo {
+            max-width: 130px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        #reader {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .status-box {
+            padding: 25px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 1.5;
+            display: none;
+        }
+        .success-bg {
+            background-color: #10b981;
+        }
+        .error-bg {
+            background-color: #ef4444;
+        }
+        .warning-bg {
+            background-color: #f97316;
+            color: white;
+        }
+        .loading-bg {
+            background-color: #6b7280;
+        }
+        #member-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #10b981;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin-top: 5px;
+        }
+        .btn-blue {
+            background-color: #007bff;
+        }
+        .btn-blue:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================== -->
+    <!-- 2. CONTENEUR PRINCIPAL DE LA CARTE                       -->
+    <!-- ======================================================== -->
+    <div class="card">
+        <img src="logo.png" alt="Logo ASTER" class="logo">
+        <h3>Contrôle des Entrées</h3>
+
+        <!-- ============================================================================== -->
+        <!-- [BLOC HTML] : Étape 1 - Le Scanner Caméra -->
+        <!-- Contient la zone vidéo du lecteur QR code et le texte d'aide associé. -->
+        <!-- ============================================================================== -->
+        <div id="scanner-container">
+            <div id="reader"></div>
+            <p style="font-size: 14px; color: #666;">Scannez le badge du membre pour valider l'entrée</p>
+        </div>
+
+        <!-- ============================================================================== -->
+        <!-- [BLOC HTML] : Étape 2 - Le Grand Bloc de Résultat -->
+        <!-- Affiche la photo du membre, la boîte de statut dynamique et la zone d'actions. -->
+        <!-- ============================================================================== -->
+        <div id="result-container" style="display: none;">
+            <img id="member-photo" src="" alt="Photo du membre">
+            <div id="message-box" class="status-box"></div>
+            <div id="action-area"></div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 3. LOGIQUE JAVASCRIPT                                    -->
+    <!-- ======================================================== -->
+    <script>
+        let html5QrCode;
+        const scriptUrl = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+
+        /**
+         * ==============================================================================
+         * [BLOC JS] : Fonction de vérification de l'ID scanné auprès du serveur Google Apps Script
+         * Gère l'affichage du chargement, l'appel fetch, l'affichage de la photo du membre,
+         * et l'affichage dans l'ordre : Nom, ID, Titre, puis Message/Statut en dessous.
+         * ==============================================================================
+         */
+        function verifierID(memberId) {
+            // [BLOC ISOLÉ] : Passage de la vue scanner à la vue résultat
+            document.getElementById('scanner-container').style.display = 'none';
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.style.display = 'block';
+            
+            document.getElementById('member-photo').style.display = 'none';
+
+            // [BLOC ISOLÉ] : État de chargement initial dans la boîte de message
+            const msgBox = document.getElementById('message-box');
+            msgBox.className = "status-box loading-bg";
+            msgBox.style.display = "block";
+            msgBox.innerHTML = "Vérification de l'entrée en cours...";
+
+            // Requête vers l'API Google Apps Script avec l'action 'entree'
+            fetch(`${scriptUrl}?code=${encodeURIComponent(memberId)}&action=entree`)
+                .then(response => response.json())
+                .then(data => {
+                    const actionArea = document.getElementById('action-area');
+                    actionArea.innerHTML = '';
+
+                    const imgElem = document.getElementById('member-photo');
+                    // [BLOC ISOLÉ] : Gestion de l'affichage de la photo du membre si elle existe
+                    if (data.photo && data.photo.trim() !== "") {
+                        imgElem.src = data.photo;
+                        imgElem.style.display = 'inline-block';
+                    } else {
+                        imgElem.style.display = 'none';
+                    }
+
+                    // [BLOC ISOLÉ] : Préparation des variables d'affichage (Nom, Titre, ID)
+                    const nomMembre = data.name || "";
+                    const idMembre = memberId;
+                    const titreMembre = data.titre ? `<span style="font-size: 13px; font-style: italic; opacity: 0.9; display: block; margin-top: 2px;">${data.titre}</span>` : "";
+
+                    // [BLOC ISOLÉ] : Cas 1 - Entrée validée avec succès
+                    if (data.status === "ok") {
+                        msgBox.className = "status-box success-bg";
+                        msgBox.innerHTML = `
+                            <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
+                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
+                            ${titreMembre}
+                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">✓ ENTRÉE VALIDÉE</div>
+                        `;
+                    
+                    // [BLOC ISOLÉ] : Cas 2 - Membre déjà enregistré
+                    } else if (data.status === "deja_enregistre") {
+                        msgBox.className = "status-box warning-bg";
+                        msgBox.innerHTML = `
+                            <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
+                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
+                            ${titreMembre}
+                            <!-- [MODIFICATION] : Point d'exclamation retiré du texte d'avertissement -->
+                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">⚠️ Ce membre est déjà enregistré comme présent</div>
+                        `;
+                    
+                    // [BLOC ISOLÉ] : Cas 3 - Autres erreurs ou messages renvoyés par l'API
+                    } else {
+                        msgBox.className = "status-box warning-bg";
+                        const messageErreur = data.message || data.error || "Erreur lors du contrôle.";
+                        msgBox.innerHTML = `
+                            <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
+                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
+                            ${titreMembre}
+                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">⚠️ ${messageErreur}</div>
+                        `;
+                    }
+
+                    // Bouton de réinitialisation pour scanner un autre badge
+                    const btn = document.createElement('button');
+                    btn.className = "btn btn-blue";
+                    btn.innerText = "Scanner un autre";
+                    btn.onclick = () => location.href = "entree.html";
+                    actionArea.appendChild(btn);
+                })
+                .catch(error => {
+                    // [BLOC ISOLÉ] : Gestion de l'erreur de connexion au serveur
+                    msgBox.className = "status-box error-bg";
+                    msgBox.innerHTML = "❌ Erreur de connexion au serveur.";
+                    const btn = document.createElement('button');
+                    btn.className = "btn btn-blue";
+                    btn.innerText = "Réessayer";
+                    btn.onclick = () => location.href = "entree.html";
+                    document.getElementById('action-area').appendChild(btn);
+                    console.error('Erreur:', error);
+                });
+        }
+
+        /**
+         * ==============================================================================
+         * [BLOC JS] : Initialisation de la page au chargement (window.onload)
+         * Vérifie si un paramètre d'URL est présent ou démarre le scanner de la caméra.
+         * ==============================================================================
+         */
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const memberId = urlParams.get('id') || urlParams.get('code');
+
+            if (memberId) {
+                verifierID(memberId.trim());
+            } else {
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    (decodedText) => {
+                        html5QrCode.stop().then(() => {
+                            let cleanId = decodedText;
+                            try {
+                                if (decodedText.includes('?')) {
+                                    const urlObj = new URL(decodedText);
+                                    cleanId = urlObj.searchParams.get('id') || urlObj.searchParams.get('code') || decodedText;
+                                }
+                            } catch (e) {}
+                            verifierID(cleanId.trim());
+                        });
+                    }
+                ).catch(err => {
+                    console.error("Erreur caméra : " + err);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
