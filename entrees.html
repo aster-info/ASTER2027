@@ -55,20 +55,18 @@
             line-height: 1.5;
             display: none;
         }
-        /* Vert foncé pour une validation réussie */
         .success-bg {
-            background-color: #059669;
+            background-color: #10b981; /* Vert pour la validation */
         }
         .error-bg {
-            background-color: #ef4444;
+            background-color: #ef4444; /* Rouge pour les erreurs */
         }
-        /* Ornge  pour "déjà enregistré" */
         .warning-bg {
-            background-color: #f97316;
+            background-color: #f97316; /* Orange pour "déjà présent" */
             color: white;
         }
         .loading-bg {
-            background-color: #6b7280;
+            background-color: #6b7280; /* Gris pour le chargement */
         }
         #member-photo {
             width: 100px;
@@ -166,7 +164,7 @@
                             <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
                             <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
                             ${titreMembre}
-                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">ℹ️ Ce membre est déjà enregistré comme présent</div>
+                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">⚠️ Ce membre est déjà enregistré comme présent</div>
                         `;
                     } else {
                         msgBox.className = "status-box warning-bg";
