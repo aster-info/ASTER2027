@@ -56,17 +56,17 @@
             display: none;
         }
         .success-bg {
-            background-color: #10b981; /* Vert pour la validation */
+            background-color: #10b981;
         }
         .error-bg {
-            background-color: #ef4444; /* Rouge pour les erreurs */
+            background-color: #ef4444;
         }
         .warning-bg {
-            background-color: #f97316; /* Orange pour "déjà présent" */
+            background-color: #f97316;
             color: white;
         }
         .loading-bg {
-            background-color: #6b7280; /* Gris pour le chargement */
+            background-color: #6b7280;
         }
         #member-photo {
             width: 100px;
@@ -119,6 +119,31 @@
     <script>
         let html5QrCode;
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+
+        function demarrerCamera() {
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('scanner-container').style.display = 'block';
+
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    html5QrCode.stop().then(() => {
+                        let cleanId = decodedText;
+                        try {
+                            if (decodedText.includes('?')) {
+                                const urlObj = new URL(decodedText);
+                                cleanId = urlObj.searchParams.get('id') || urlObj.searchParams.get('code') || decodedText;
+                            }
+                        } catch (e) {}
+                        verifierID(cleanId.trim());
+                    });
+                }
+            ).catch(err => {
+                console.error("Erreur caméra : " + err);
+            });
+        }
 
         function verifierID(memberId) {
             document.getElementById('scanner-container').style.display = 'none';
@@ -177,11 +202,11 @@
                         `;
                     }
 
-                    // Correction ici pour éviter la 404
+                    // Plus de rechargement de page : on relance directement la caméra en JS
                     const btn = document.createElement('button');
                     btn.className = "btn btn-blue";
                     btn.innerText = "Scanner un autre";
-                    btn.onclick = () => location.href = window.location.pathname;
+                    btn.onclick = () => demarrerCamera();
                     actionArea.appendChild(btn);
                 })
                 .catch(error => {
@@ -190,8 +215,8 @@
                     const btn = document.createElement('button');
                     btn.className = "btn btn-blue";
                     btn.innerText = "Réessayer";
-                    btn.onclick = () => location.href = window.location.pathname; // Correction ici aussi
-                    document.getElementById('action-area').appendChild(btn);
+                    btn.onclick = () => demarrerCamera();
+                    actionArea.appendChild(btn);
                     console.error('Erreur:', error);
                 });
         }
@@ -203,25 +228,7 @@
             if (memberId) {
                 verifierID(memberId.trim());
             } else {
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: 250 },
-                    (decodedText) => {
-                        html5QrCode.stop().then(() => {
-                            let cleanId = decodedText;
-                            try {
-                                if (decodedText.includes('?')) {
-                                    const urlObj = new URL(decodedText);
-                                    cleanId = urlObj.searchParams.get('id') || urlObj.searchParams.get('code') || decodedText;
-                                }
-                            } catch (e) {}
-                            verifierID(cleanId.trim());
-                        });
-                    }
-                ).catch(err => {
-                    console.error("Erreur caméra : " + err);
-                });
+                demarrerCamera();
             }
         };
     </script>
