@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- ======================================================== -->
+    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE           -->
+    <!-- ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - ASTER</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-container img {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-badge {
+            background: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: bold;
+            font-size: 14px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-badge span {
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .badge-in { background-color: #10b981; }
+        .badge-out { background-color: #ef4444; }
+        .badge-inscrits { background-color: #38bdf8; }
+
+        .main-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: #38bdf8;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .member-item:hover {
+            border-color: #38bdf8;
+            background: #f0f9ff;
+        }
+
+        .member-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-photo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #cbd5e1;
+        }
+
+        .member-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-weight: bold;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .member-id {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .status-badge.present { background-color: #d1fae5; color: #065f46; }
+        .status-badge.sorti { background-color: #fee2e2; color: #991b1b; }
+        .status-badge.inscrit { background-color: #e0f2fe; color: #0369a1; }
+
+        .heure-text {
+            font-size: 11px;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white; width: 90%; max-width: 400px; border-radius: 24px; padding: 25px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: scaleUp 0.2s ease;
+        }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid #38bdf8; }
+        .modal h3 { margin: 0 0 4px 0; color: #1e293b; font-size: 20px; font-weight: 800; }
+        .modal-details { text-align: left; background: #f8fafc; padding: 15px; border-radius: 16px; margin: 20px 0; font-size: 14px; color: #334155; border: 1px solid #e2e8f0; }
+        .modal-details p { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-details span { font-weight: 700; color: #0f172a; }
+        .btn-close { width: 100%; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 14px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-close:hover { background: #0284c7; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================== -->
+    <!-- A. LE CONTENEUR DU LOGO                                  -->
+    <!-- ======================================================== -->
+    <div class="logo-container">
+        <img src="logo.png" alt="Logo ASTER" onerror="this.src='https://via.placeholder.com/120'">
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- B. LE TITRE PRINCIPAL                                    -->
+    <!-- ======================================================== -->
+    <h1>Administration</h1>
+
+    <!-- ======================================================== -->
+    <!-- C. LE BLOC DES STATISTIQUES GLOBALES                     -->
+    <!-- ======================================================== -->
+    <div class="stats-container">
+        <div class="stat-badge">In: <span class="badge-in" id="count-in">0</span></div>
+        <div class="stat-badge">Out: <span class="badge-out" id="count-out">0</span></div>
+        <div class="stat-badge">Inscrits: <span class="badge-inscrits" id="count-inscrits">0</span></div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- D. LA CARTE PRINCIPALE ET LA BARRE DE RECHERCHE          -->
+    <!-- ======================================================== -->
+    <div class="main-card">
+        <input type="text" id="search-input" class="search-box" placeholder="Rechercher un membre par nom ou ID..." oninput="filterMembers()">
+        
+        <div id="member-list" class="member-list">
+            <p style="text-align: center; color: #94a3b8; padding: 15px;">Chargement des données...</p>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- E. LA FENÊTRE MODALE (POPUP DE DÉTAIL D'UN MEMBRE)      -->
+    <!-- ======================================================== -->
+    <div id="modal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <img id="modal-photo" src="logo.png" alt="Photo" onerror="this.src='logo.png'">
+            <h3 id="modal-name">Nom Membre</h3>
+            <div id="modal-id" style="font-size: 12px; color: #64748b; font-weight: 600;">ID</div>
+            
+            <!-- CHANGEMENT : Titre agrandi (1_px) avec une marge supérieure (margin-top: 8px) pour créer un espace avec l'ID -->
+            <div id="modal-titre" style="font-size: 18px; color: #0284c7; font-weight: bold; margin-top: 8px; margin-bottom: 12px;"></div>
+            
+            <div class="modal-details">
+                <p>📧 Email : <span id="modal-email" style="font-size: 13px; font-weight: 500; color: #0284c7;">--</span></p>
+                <p>📥 Arrivée : <span id="modal-in">--:--</span></p>
+                <p>📤 Départ : <span id="modal-out">--:--</span></p>
+                <p>📌 Statut : <span id="modal-status">--</span></p>
+            </div>
+            
+            <button class="btn-close" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 3. LE BLOC DE SCRIPTS JAVASCRIPT                         -->
+    <!-- ======================================================== -->
+    <script>
+        /* A. Initialisation et configuration globale */
+        const SCRIPT_URL = "<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- ======================================================== -->
+    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE           -->
+    <!-- ======================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - ASTER</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-container img {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-badge {
+            background: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: bold;
+            font-size: 14px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-badge span {
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .badge-in { background-color: #10b981; }
+        .badge-out { background-color: #ef4444; }
+        .badge-inscrits { background-color: #38bdf8; }
+
+        .main-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: #38bdf8;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .member-item:hover {
+            border-color: #38bdf8;
+            background: #f0f9ff;
+        }
+
+        .member-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-photo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #cbd5e1;
+        }
+
+        .member-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-weight: bold;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .member-id {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .status-badge.present { background-color: #d1fae5; color: #065f46; }
+        .status-badge.sorti { background-color: #fee2e2; color: #991b1b; }
+        .status-badge.inscrit { background-color: #e0f2fe; color: #0369a1; }
+
+        .heure-text {
+            font-size: 11px;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white; width: 90%; max-width: 400px; border-radius: 24px; padding: 25px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: scaleUp 0.2s ease;
+        }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid #38bdf8; }
+        .modal h3 { margin: 0 0 4px 0; color: #1e293b; font-size: 20px; font-weight: 800; }
+        .modal-details { text-align: left; background: #f8fafc; padding: 15px; border-radius: 16px; margin: 20px 0; font-size: 14px; color: #334155; border: 1px solid #e2e8f0; }
+        .modal-details p { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-details span { font-weight: 700; color: #0f172a; }
+        .btn-close { width: 100%; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 14px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-close:hover { background: #0284c7; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================== -->
+    <!-- A. LE CONTENEUR DU LOGO                                  -->
+    <!-- ======================================================== -->
+    <div class="logo-container">
+        <img src="logo.png" alt="Logo ASTER" onerror="this.src='https://via.placeholder.com/120'">
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- B. LE TITRE PRINCIPAL                                    -->
+    <!-- ======================================================== -->
+    <h1>Administration</h1>
+
+    <!-- ======================================================== -->
+    <!-- C. LE BLOC DES STATISTIQUES GLOBALES                     -->
+    <!-- ======================================================== -->
+    <div class="stats-container">
+        <div class="stat-badge">In: <span class="badge-in" id="count-in">0</span></div>
+        <div class="stat-badge">Out: <span class="badge-out" id="count-out">0</span></div>
+        <div class="stat-badge">Inscrits: <span class="badge-inscrits" id="count-inscrits">0</span></div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- D. LA CARTE PRINCIPALE ET LA BARRE DE RECHERCHE          -->
+    <!-- ======================================================== -->
+    <div class="main-card">
+        <input type="text" id="search-input" class="search-box" placeholder="Rechercher un membre par nom ou ID..." oninput="filterMembers()">
+        
+        <div id="member-list" class="member-list">
+            <p style="text-align: center; color: #94a3b8; padding: 15px;">Chargement des données...</p>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- E. LA FENÊTRE MODALE (POPUP DE DÉTAIL D'UN MEMBRE)      -->
+    <!-- ======================================================== -->
+    <div id="modal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <img id="modal-photo" src="logo.png" alt="Photo" onerror="this.src='logo.png'">
+            <h3 id="modal-name">Nom Membre</h3>
+            <div id="modal-id" style="font-size: 12px; color: #64748b; font-weight: 600;">ID</div>
+            
+            <!-- CHANGEMENT : Titre agrandi (1_px) avec une marge supérieure (margin-top: 8px) pour créer un espace avec l'ID -->
+            <div id="modal-titre" style="font-size: 18px; color: #0284c7; font-weight: bold; margin-top: 8px; margin-bottom: 12px;"></div>
+            
+            <div class="modal-details">
+                <p>📧 Email : <span id="modal-email" style="font-size: 13px; font-weight: 500; color: #0284c7;">--</span></p>
+                <p>📥 Arrivée : <span id="modal-in">--:--</span></p>
+                <p>📤 Départ : <span id="modal-out">--:--</span></p>
+                <p>📌 Statut : <span id="modal-status">--</span></p>
+            </div>
+            
+            <button class="btn-close" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 3. LE BLOC DE SCRIPTS JAVASCRIPT                         -->
+    <!-- ======================================================== -->
+    <script>
+        /* A. Initialisation et configuration globale */
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUweBhU2D-B9nFFOYF5hWe0m48oCHhGZXVK1-sqyYllMLdwGnrDzjAXi9hbY0mWotq/exec";
+        let allMembers = [];
+
+        /* B. Récupération des données (JSONP) : fetchMembers() */
+        function fetchMembers() {
+            const callbackName = "handleResponse_" + Math.floor(Math.random() * 100000);
+            
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                const oldScript = document.getElementById('jsonp-script');
+                if (oldScript) oldScript.remove();
+
+                if (data && data.success && data.members) {
+                    allMembers = data.members;
+                    updateStats();
+                    filterMembers();
+                } else {
+                    document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:#94a3b8; padding: 15px;">Aucun membre trouvé.</p>`;
+                }
+            };
+
+            const oldScript = document.getElementById('jsonp-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'jsonp-script';
+            script.src = `${SCRIPT_URL}?action=getMembers&_=${new Date().getTime()}&callback=${callbackName}`;
+            
+            script.onerror = function() {
+                delete window[callbackName];
+                script.remove();
+                document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:red; padding: 15px;">Échec du chargement.</p>`;
+            };
+
+            document.head.appendChild(script);
+        }
+
+        /* C. Calcul des statistiques : updateStats() */
+        function updateStats() {
+            let inCount = 0;
+            let outCount = 0;
+
+            allMembers.forEach(m => {
+                let st = (m.statut || "").toString().trim();
+                if (st === "Présent") inCount++;
+                if (st === "Sorti") outCount++;
+            });
+
+            document.getElementById("count-in").innerText = inCount;
+            document.getElementById("count-out").innerText = outCount;
+            document.getElementById("count-inscrits").innerText = allMembers.length;
+        }
+
+        /* D. Affichage de la liste : renderList(members) */
+        function renderList(members) {
+            const container = document.getElementById("member-list");
+            if (members.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 15px;">Aucun résultat</p>`;
+                return;
+            }
+
+            container.innerHTML = members.map(m => {
+                let nom = m.nom || "Membre";
+                let id = m.id || "";
+                
+                let photo = (m.photoUrl && m.photoUrl.startsWith("http")) ? m.photoUrl : 'logo.png';
+                
+                let st = (m.statut || "Inscrit").toString().trim();
+                
+                let badgeClass = "inscrit";
+                if (st === "Présent") badgeClass = "present";
+                if (st === "Sorti") badgeClass = "sorti";
+
+                let heureAffichee = m.heure || "";
+                let heureColor = (st === "Sorti") ? "#991b1b" : "#065f46"; 
+                if (st !== "Présent" && st !== "Sorti") {
+                    heureColor = "#64748b";
+                }
+
+                let heureDisplay = heureAffichee ? `<span class="heure-text" style="color: ${heureColor}; font-weight: bold;">${heureAffichee}</span>` : ``;
+
+                return `
+                    <div class="member-item" onclick="openModal('${m.id}')">
+                        <div class="member-left">
+                            <img src="${photo}" class="member-photo" alt="Photo" onerror="this.src='logo.png'">
+                            <div class="member-details">
+                                <div class="member-name">${nom}</div>
+                                <div class="member-id">${id}</div>
+                            </div>
+                        </div>
+                        <div class="member-right">
+                            <span class="status-badge ${badgeClass}">${st}</span>
+                            ${heureDisplay}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* E. Gestion de la modale : openModal(memberId) et closeModal() */
+        function openModal(memberId) {
+            const m = allMembers.find(item => item.id === memberId);
+            if (!m) return;
+
+            document.getElementById('modal-photo').src = (m.photoUrl && m.photoUrl.startsWith('http')) ? m.photoUrl : 'logo.png';
+            document.getElementById('modal-name').innerText = m.nom || "Membre";
+            document.getElementById('modal-id').innerText = m.id || "";
+            document.getElementById('modal-titre').innerText = m.titre || "";
+            document.getElementById('modal-email').innerText = m.email || "Non renseigné";
+            
+            document.getElementById('modal-in').innerText = m.arrivee || "--:--";
+            document.getElementById('modal-out').innerText = m.depart || "--:--";
+            document.getElementById('modal-status').innerText = m.statut || "Inscrit";
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        /* F. Filtrage par recherche : filterMembers() */
+        function filterMembers() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            const filtered = allMembers.filter(m => {
+                let nom = (m.nom || "").toLowerCase();
+                let id = (m.id || "").toLowerCase();
+                return nom.includes(query) || id.includes(query);
+            });
+            renderList(filtered);
+        }
+
+        /* G. Automatisation périodique (lancement initial et intervalle de rafraîchissement) */
+        fetchMembers();
+        setInterval(fetchMembers, 5000);
+    </script>
+</body>
+</html>
+";
+        let allMembers = [];
+
+        /* B. Récupération des données (JSONP) : fetchMembers() */
+        function fetchMembers() {
+            const callbackName = "handleResponse_" + Math.floor(Math.random() * 100000);
+            
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                const oldScript = document.getElementById('jsonp-script');
+                if (oldScript) oldScript.remove();
+
+                if (data && data.success && data.members) {
+                    allMembers = data.members;
+                    updateStats();
+                    filterMembers();
+                } else {
+                    document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:#94a3b8; padding: 15px;">Aucun membre trouvé.</p>`;
+                }
+            };
+
+            const oldScript = document.getElementById('jsonp-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'jsonp-script';
+            script.src = `${SCRIPT_URL}?action=getMembers&_=${new Date().getTime()}&callback=${callbackName}`;
+            
+            script.onerror = function() {
+                delete window[callbackName];
+                script.remove();
+                document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:red; padding: 15px;">Échec du chargement.</p>`;
+            };
+
+            document.head.appendChild(script);
+        }
+
+        /* C. Calcul des statistiques : updateStats() */
+        function updateStats() {
+            let inCount = 0;
+            let outCount = 0;
+
+            allMembers.forEach(m => {
+                let st = (m.statut || "").toString().trim();
+                if (st === "Présent") inCount++;
+                if (st === "Sorti") outCount++;
+            });
+
+            document.getElementById("count-in").innerText = inCount;
+            document.getElementById("count-out").innerText = outCount;
+            document.getElementById("count-inscrits").innerText = allMembers.length;
+        }
+
+        /* D. Affichage de la liste : renderList(members) */
+        function renderList(members) {
+            const container = document.getElementById("member-list");
+            if (members.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 15px;">Aucun résultat</p>`;
+                return;
+            }
+
+            container.innerHTML = members.map(m => {
+                let nom = m.nom || "Membre";
+                let id = m.id || "";
+                
+                let photo = (m.photoUrl && m.photoUrl.startsWith("http")) ? m.photoUrl : 'logo.png';
+                
+                let st = (m.statut || "Inscrit").toString().trim();
+                
+                let badgeClass = "inscrit";
+                if (st === "Présent") badgeClass = "present";
+                if (st === "Sorti") badgeClass = "sorti";
+
+                let heureAffichee = m.heure || "";
+                let heureColor = (st === "Sorti") ? "#991b1b" : "#065f46"; 
+                if (st !== "Présent" && st !== "Sorti") {
+                    heureColor = "#64748b";
+                }
+
+                let heureDisplay = heureAffichee ? `<span class="heure-text" style="color: ${heureColor}; font-weight: bold;">${heureAffichee}</span>` : ``;
+
+                return `
+                    <div class="member-item" onclick="openModal('${m.id}')">
+                        <div class="member-left">
+                            <img src="${photo}" class="member-photo" alt="Photo" onerror="this.src='logo.png'">
+                            <div class="member-details">
+                                <div class="member-name">${nom}</div>
+                                <div class="member-id">${id}</div>
+                            </div>
+                        </div>
+                        <div class="member-right">
+                            <span class="status-badge ${badgeClass}">${st}</span>
+                            ${heureDisplay}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* E. Gestion de la modale : openModal(memberId) et closeModal() */
+        function openModal(memberId) {
+            const m = allMembers.find(item => item.id === memberId);
+            if (!m) return;
+
+            document.getElementById('modal-photo').src = (m.photoUrl && m.photoUrl.startsWith('http')) ? m.photoUrl : 'logo.png';
+            document.getElementById('modal-name').innerText = m.nom || "Membre";
+            document.getElementById('modal-id').innerText = m.id || "";
+            document.getElementById('modal-titre').innerText = m.titre || "";
+            document.getElementById('modal-email').innerText = m.email || "Non renseigné";
+            
+            document.getElementById('modal-in').innerText = m.arrivee || "--:--";
+            document.getElementById('modal-out').innerText = m.depart || "--:--";
+            document.getElementById('modal-status').innerText = m.statut || "Inscrit";
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        /* F. Filtrage par recherche : filterMembers() */
+        function filterMembers() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            const filtered = allMembers.filter(m => {
+                let nom = (m.nom || "").toLowerCase();
+                let id = (m.id || "").toLowerCase();
+                return nom.includes(query) || id.includes(query);
+            });
+            renderList(filtered);
+        }
+
+        /* G. Automatisation périodique (lancement initial et intervalle de rafraîchissement) */
+        fetchMembers();
+        setInterval(fetchMembers, 5000);
+    </script>
+</body>
+</html>
