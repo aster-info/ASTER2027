@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- ======================================================== -->
+    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE  SORTIE         -->
+    <!-- ======================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrôle de Sortie - ASTER</title>
+    <title>Contrôle des Sorties - ASTER</title>
+    <!-- Intégration de la bibliothèque de scan QR Code -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body {
@@ -55,29 +59,26 @@
             line-height: 1.5;
             display: none;
         }
-        /* BLEU : Sortie validée (membre était bien Présent) */
-        .exit-bg {
-            background-color: #0284c7;
+        .success-bg {
+            background-color: #1199aa;
         }
-        /* ORANGE : Membre était seulement Inscrit (pas d'entrée enregistrée) */
+        .error-bg {
+            background-color: #ef4444; 
+        }
         .warning-bg {
-            background-color: #f97316;
+            background-color: #f97316; 
             color: white;
         }
-        /* ROUGE : Erreur / ID inconnu */
-        .error-bg {
-            background-color: #ef4444;
-        }
         .loading-bg {
-            background-color: #6b7280;
+            background-color: #6b7280; 
         }
         #member-photo {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 15px;
-            border: 3px solid #0284c7;
+            margin-bottom: 20px;
+            border: 3px solid #10b981;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             display: none;
         }
@@ -92,6 +93,7 @@
             cursor: pointer;
             color: white;
             margin-top: 5px;
+            margin-right: 5px;
         }
         .btn-blue {
             background-color: #007bff;
@@ -103,26 +105,48 @@
 </head>
 <body>
 
+    <!-- ======================================================== -->
+    <!-- 2. CONTENEUR PRINCIPAL DE LA CARTE                       -->
+    <!-- ======================================================== -->
     <div class="card">
         <img src="logo.png" alt="Logo ASTER" class="logo">
-        <h3>Contrôle des Sorties</h3>
+        <h3 id="page-title">Contrôle des Sorties</h3>
 
+        <!-- ============================================================================== -->
+        <!-- [BLOC HTML] : Étape 1 - Le Scanner Caméra -->
+        <!-- ============================================================================== -->
         <div id="scanner-container">
             <div id="reader"></div>
-            <p style="font-size: 14px; color: #666;">Scannez le badge du membre pour enregistrer sa sortie</p>
+            <p style="font-size: 14px; color: #666;">Scannez le badge du membre pour valider la sortie</p>
         </div>
 
+        <!-- ============================================================================== -->
+        <!-- [BLOC HTML] : Étape 2 - Le Grand Bloc de Résultat -->
+        <!-- ============================================================================== -->
         <div id="result-container" style="display: none;">
-            <img id="member-photo" alt="Photo du membre">
+            <img id="member-photo" src="" alt="Photo du membre">
             <div id="message-box" class="status-box"></div>
             <div id="action-area"></div>
         </div>
     </div>
 
+    <!-- ======================================================== -->
+    <!-- 3. LOGIQUE JAVASCRIPT                                    -->
+    <!-- ======================================================== -->
     <script>
         let html5QrCode;
         const scriptUrl = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+        
+        const urlParamsGlobal = new URLSearchParams(window.location.search);
+        let actionParam = urlParamsGlobal.get('action');
 
+        if (window.location.pathname.includes('sortie') || !actionParam) {
+            actionParam = 'sortie';
+        }
+
+        /**
+         * Fonction pour redémarrer la caméra proprement sans recharger la page (évite la 404)
+         */
         function demarrerCamera() {
             document.getElementById('result-container').style.display = 'none';
             document.getElementById('scanner-container').style.display = 'block';
@@ -140,7 +164,7 @@
                                 cleanId = urlObj.searchParams.get('id') || urlObj.searchParams.get('code') || decodedText;
                             }
                         } catch (e) {}
-                        verifierSortie(cleanId.trim());
+                        verifierID(cleanId.trim());
                     });
                 }
             ).catch(err => {
@@ -148,25 +172,30 @@
             });
         }
 
-        function verifierSortie(memberId) {
+        /**
+         * ==============================================================================
+         * [BLOC JS] : Fonction de vérification de l'ID scanné (Sortie)
+         * ==============================================================================
+         */
+        function verifierID(memberId) {
             document.getElementById('scanner-container').style.display = 'none';
             const resultContainer = document.getElementById('result-container');
             resultContainer.style.display = 'block';
             
-            document.getElementById('member-photo').style.display = 'none';
+            const imgElem = document.getElementById('member-photo');
+            imgElem.style.display = 'none';
 
             const msgBox = document.getElementById('message-box');
             msgBox.className = "status-box loading-bg";
             msgBox.style.display = "block";
-            msgBox.innerHTML = "Vérification de la sortie en cours...";
+            msgBox.innerHTML = "Vérification en cours...";
 
-            fetch(`${scriptUrl}?code=${encodeURIComponent(memberId)}&action=sortie`)
+            fetch(`${scriptUrl}?code=${encodeURIComponent(memberId)}&action=${actionParam}`)
                 .then(response => response.json())
                 .then(data => {
                     const actionArea = document.getElementById('action-area');
                     actionArea.innerHTML = '';
 
-                    const imgElem = document.getElementById('member-photo');
                     if (data.photo && data.photo.trim() !== "") {
                         imgElem.src = data.photo;
                         imgElem.style.display = 'inline-block';
@@ -174,47 +203,84 @@
                         imgElem.style.display = 'none';
                     }
 
+                    // En-tête unique contenant le nom, l'ID et le titre
                     const nomMembre = data.name || data.nom || "";
                     const idMembre = memberId;
                     const titreMembre = data.titre ? `<span style="font-size: 13px; font-style: italic; opacity: 0.9; display: block; margin-top: 2px;">${data.titre}</span>` : "";
 
-                    // CAS 1 : Le membre était bien Présent -> BLEU
-                    if (data.status === "ok") {
-                        msgBox.className = "status-box exit-bg";
-                        msgBox.innerHTML = `
-                            <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
-                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
-                            ${titreMembre}
-                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">👋 SORTIE VALIDÉE</div>
-                        `;
-                    
-                    // CAS 2 : Le membre était seulement Inscrit (ou déjà sorti) -> ORANGE
-                    } else if (data.status === "non_present") {
-                        msgBox.className = "status-box warning-bg";
-                        const msgInfo = data.message || "Ce membre n'était pas enregistré comme présent.";
-                        msgBox.innerHTML = `
-                            <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
-                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
-                            ${titreMembre}
-                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">⚠️ ${msgInfo}</div>
-                        `;
-                    
-                    // CAS 3 : Erreur ou membre introuvable -> ROUGE
-                    } else {
-                        msgBox.className = "status-box error-bg";
-                        const messageErreur = data.message || data.error || "Erreur lors du contrôle.";
-                        msgBox.innerHTML = `
-                            <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
-                            <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">❌ ${messageErreur}</div>
-                        `;
-                    }
+                    const enteteMembreHtml = `
+                        <span style="font-size: 18px; font-weight: bold; display: block;">${nomMembre}</span>
+                        <span style="font-size: 13px; opacity: 0.85; display: block;">ID : ${idMembre}</span>
+                        ${titreMembre}
+                        <div style="margin-top: 10px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;">
+                    `;
 
-                    // Redémarrage direct de la caméra en JS (zéro erreur 404)
-                    const btn = document.createElement('button');
-                    btn.className = "btn btn-blue";
-                    btn.innerText = "Scanner un autre";
-                    btn.onclick = () => demarrerCamera();
-                    actionArea.appendChild(btn);
+                    // Cas 1 : Succès
+                    if (data.status === "ok" || data.status === "success") {
+                        msgBox.className = "status-box success-bg";
+                        msgBox.innerHTML = `${enteteMembreHtml}✓ SORTIE VALIDÉE</div>`;
+                        
+                        const btn = document.createElement('button');
+                        btn.className = "btn btn-blue";
+                        btn.innerText = "Scanner un autre";
+                        btn.onclick = () => demarrerCamera();
+                        actionArea.appendChild(btn);
+
+                    // Cas 2 : Enquête requise
+                    } else if (data.status === "enquete_requise") {
+                        msgBox.className = "status-box warning-bg";
+                        msgBox.innerHTML = `${enteteMembreHtml}⚠️ Veuillez remplir l'enquête de satisfaction avant de sortir</div>`;
+
+                        if (data.redirectUrl) {
+                            const btnEnquete = document.createElement('button');
+                            btnEnquete.className = "btn btn-blue";
+                            btnEnquete.innerText = "Remplir l'enquête";
+                            btnEnquete.onclick = () => {
+                                window.open(data.redirectUrl, '_blank');
+                                window.close();
+                                setTimeout(() => {
+                                    document.body.innerHTML = `
+                                        <div class="card" style="margin: auto;">
+                                            <h3 style="color: #2c3e50;">Enquête ouverte</h3>
+                                            <p style="color: #555; font-size: 15px;">L'enquête a bien été ouverte dans un nouvel onglet.<br>Vous pouvez fermer cette fenêtre.</p>
+                                        </div>
+                                    `;
+                                }, 200);
+                            };
+                            actionArea.appendChild(btnEnquete);
+                        }
+
+                        const btnScan = document.createElement('button');
+                        btnScan.className = "btn btn-blue";
+                        btnScan.style.backgroundColor = "#6c757d"; 
+                        btnScan.innerText = "Scanner un autre";
+                        btnScan.onclick = () => demarrerCamera();
+                        actionArea.appendChild(btnScan);
+
+                    // Cas 3 : Erreurs (Nettoyage robuste pour les messages d'erreur)
+                    } else {
+                        msgBox.className = "status-box warning-bg";
+                        
+                        let texteErreur = "Erreur lors du contrôle.";
+                        let rawMsg = (data.message || "").toLowerCase();
+                        
+                        if (rawMsg.includes("pas présent") || rawMsg.includes("entrée")) {
+                            texteErreur = "n'est pas présent (non enregistré à l'entrée) !";
+                        } else if (rawMsg.includes("déjà sorti")) {
+                            texteErreur = "est déjà sorti !";
+                        } else {
+                            texteErreur = data.message ? data.message.split('\n').pop() : "Action impossible.";
+                        }
+
+                        msgBox.innerHTML = `${enteteMembreHtml}⚠️ ${texteErreur}</div>`;
+                        
+                        const btn = document.createElement('button');
+                        btn.className = "btn btn-blue";
+                        btn.innerText = "Scanner un autre";
+                        btn.onclick = () => demarrerCamera();
+                        actionArea.appendChild(btn);
+                        btn.focus();
+                    }
                 })
                 .catch(error => {
                     msgBox.className = "status-box error-bg";
@@ -233,7 +299,7 @@
             const memberId = urlParams.get('id') || urlParams.get('code');
 
             if (memberId) {
-                verifierSortie(memberId.trim());
+                verifierID(memberId.trim());
             } else {
                 demarrerCamera();
             }
