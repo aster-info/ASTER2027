@@ -269,4 +269,990 @@
         .card-tag {
             font-size: 12px;
             font-weight: 700;
-            padding: 4px
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .chart-box {
+            position: relative;
+            flex: 1;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 6 : SYNTHÈSE DES INSTITUTIONS & LISTE FILTRABLE
+           ===================================================================== */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.35fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 960px) {
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .inst-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 410px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .inst-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+
+        .inst-item:hover {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+        }
+
+        .inst-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .inst-count {
+            background: var(--blue-soft);
+            color: var(--blue-text);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .search-input, .select-filter {
+            padding: 10px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #334155;
+            background: #ffffff;
+            outline: none;
+        }
+
+        .search-input { flex: 1; min-width: 180px; }
+        .search-input:focus, .select-filter:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+        }
+
+        .members-table-wrap {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 10px;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1.5px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+        }
+
+        td {
+            padding: 10px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tbody tr.clickable-row {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        tbody tr.clickable-row:hover td {
+            background: #f0f9ff;
+        }
+
+        .avatar-sm {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .status-present { background: var(--green-soft); color: var(--green-text); }
+        .status-sorti { background: var(--red-soft); color: var(--red-text); }
+        .status-inscrit { background: var(--blue-soft); color: var(--blue-text); }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--muted);
+            padding: 28px 12px;
+            font-size: 14px;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 7 : FENÊTRE MODALE DE DÉTAILS (KPI & PARTICIPANTS)
+           ===================================================================== */
+        .kpi-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            z-index: 2000;
+        }
+
+        .kpi-modal-backdrop.active {
+            display: flex;
+        }
+
+        .kpi-modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 680px;
+            max-height: 85vh;
+            border-radius: 24px;
+            box-shadow: 0 24px 55px rgba(15, 23, 42, 0.28);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .kpi-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        .kpi-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kpi-modal-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .kpi-modal-count {
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: var(--blue-soft);
+            color: var(--blue-text);
+        }
+
+        .kpi-modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-modal-close:hover {
+            background: #f1f5f9;
+        }
+
+        .kpi-modal-body {
+            padding: 18px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-member-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+        }
+
+        .modal-member-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .modal-member-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 2px solid #cbd5e1;
+            background: #ffffff;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .modal-member-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .modal-member-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 12.5px;
+            color: #334155;
+        }
+
+        .modal-field-label {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .modal-member-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .modal-member-time {
+            font-size: 12.5px;
+            font-weight: 800;
+            margin-top: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kpi-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- =================================================================
+             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD
+             ================================================================= -->
+        <header class="top-header">
+            <div class="brand">
+                <img id="header-logo" src="./logo.png" alt="Logo ASTER" class="header-logo">
+                <div>
+                    <h1 class="brand-title">Tableau de Bord ASTER</h1>
+                    <p class="brand-subtitle">Présences, régimes alimentaires, titres et institutions en temps réel</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="live-pill">
+                    <span class="live-dot"></span>
+                    <span id="last-update">Chargement...</span>
+                </div>
+                <button type="button" class="btn btn-ghost" onclick="chargerDonnees()">🔄 Actualiser</button>
+                <a href="./admin4.html" class="btn btn-primary">🛡️ Vue Admin</a>
+            </div>
+        </header>
+
+        <!-- =================================================================
+             RUBRIQUE 4 (HTML) : 4 ONGLETS / CARTES KPI AVEC MODALE DE DÉTAILS
+             ================================================================= -->
+        <section class="kpi-grid" aria-label="Indicateurs clés">
+            <div class="kpi-card kpi-present" onclick="ouvrirModaleKPI('Présent')">
+                <div>
+                    <div class="kpi-label">Présents</div>
+                    <div id="kpi-present" class="kpi-value">0</div>
+                    <div id="kpi-present-pct" class="kpi-sub">0 % des inscrits</div>
+                </div>
+                <div class="kpi-badge">IN</div>
+            </div>
+
+            <div class="kpi-card kpi-sorti" onclick="ouvrirModaleKPI('Sorti')">
+                <div>
+                    <div class="kpi-label">Sortis</div>
+                    <div id="kpi-sorti" class="kpi-value">0</div>
+                    <div id="kpi-sorti-pct" class="kpi-sub">0 % des inscrits</div>
+                </div>
+                <div class="kpi-badge">OUT</div>
+            </div>
+
+            <div class="kpi-card kpi-inscrit" onclick="ouvrirModaleKPI('Inscrit')">
+                <div>
+                    <div class="kpi-label">Inscrits (en attente)</div>
+                    <div id="kpi-inscrit" class="kpi-value">0</div>
+                    <div class="kpi-sub">Non encore entrés</div>
+                </div>
+                <div class="kpi-badge">REG</div>
+            </div>
+
+            <div class="kpi-card kpi-total" onclick="ouvrirModaleKPI('TOUS')">
+                <div>
+                    <div class="kpi-label">Total Inscrits</div>
+                    <div id="kpi-total" class="kpi-value">0</div>
+                    <div id="kpi-inst-count" class="kpi-sub">0 institution(s)</div>
+                </div>
+                <div class="kpi-badge">ALL</div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 5 (HTML) : GRAPHIQUES ANALYTIQUES
+             ================================================================= -->
+        <section class="charts-grid" aria-label="Graphiques statistiques">
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">📊 Statuts des participants</h2>
+                    <span class="card-tag">Présents / Sortis / Inscrits</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartStatuts"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🍽️ Régimes alimentaires</h2>
+                    <span class="card-tag">Par catégorie</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartRegimes"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏅 Titres des membres</h2>
+                    <span class="card-tag">Répartition</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartTitres"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏥 Institutions (Top)</h2>
+                    <span class="card-tag">Effectifs</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartInstitutions"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 6 (HTML) : DÉTAIL INSTITUTIONS & LISTE PARTICIPANTS
+             ================================================================= -->
+        <section class="bottom-grid">
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏢 Toutes les institutions</h2>
+                    <span id="badge-nb-inst" class="card-tag">0</span>
+                </div>
+                <div id="institutions-list" class="inst-list">
+                    <div class="empty-msg">Chargement...</div>
+                </div>
+            </article>
+
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">👥 Participants</h2>
+                    <span id="badge-nb-filtered" class="card-tag">0 affiché(s)</span>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" id="filter-search" class="search-input" placeholder="Rechercher nom, titre, institution ou régime...">
+                    <select id="filter-statut" class="select-filter">
+                        <option value="">Tous statuts</option>
+                        <option value="Présent">Présent</option>
+                        <option value="Sorti">Sorti</option>
+                        <option value="Inscrit">Inscrit</option>
+                    </select>
+                </div>
+
+                <div class="members-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Membre</th>
+                                <th>Titre</th>
+                                <th>Institution</th>
+                                <th>Régime</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <tr><td colspan="5" class="empty-msg">Chargement des données...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </div>
+
+    <!-- =====================================================================
+         RUBRIQUE 7 (HTML) : FENÊTRE MODALE DÉTAILS KPI & PARTICIPANT
+         ===================================================================== -->
+    <div id="kpi-modal" class="kpi-modal-backdrop" onclick="if(event.target === this) fermerModaleKPI()">
+        <div class="kpi-modal-card">
+            <div class="kpi-modal-header">
+                <div class="kpi-modal-title-wrap">
+                    <h2 id="kpi-modal-title" class="kpi-modal-title">Détails</h2>
+                    <span id="kpi-modal-count" class="kpi-modal-count">0 membre(s)</span>
+                </div>
+                <button type="button" class="kpi-modal-close" onclick="fermerModaleKPI()" aria-label="Fermer">✕</button>
+            </div>
+
+            <div id="kpi-modal-body" class="kpi-modal-body"></div>
+
+            <div class="kpi-modal-footer">
+                <button type="button" class="btn btn-primary" onclick="fermerModaleKPI()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           RUBRIQUE 8 (JS) : CONFIGURATION ET ÉTAT GLOBAL
+           ===================================================================== */
+        const LOGO_ASTER_URL = "./logo.png";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+
+        let allMembers = [];
+        let displayedMembers = [];
+        let charts = {};
+
+        const PALETTE = [
+            "#0284c7", "#10b981", "#f59e0b", "#8b5cf6",
+            "#ec4899", "#14b8a6", "#f97316", "#6366f1",
+            "#64748b", "#84cc16"
+        ];
+
+        /* =====================================================================
+           RUBRIQUE 9 (JS) : RÉSOLUTION PHOTO & AGRÉGATION DES DONNÉES
+           ===================================================================== */
+        function resoudrePhotoUrl(url) {
+            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
+            const propre = url.trim();
+            const lower = propre.toLowerCase();
+
+            if (
+                !propre ||
+                lower === "attente" ||
+                lower === "en attente" ||
+                lower.includes("attente") ||
+                lower === "pending" ||
+                lower === "none" ||
+                lower === "null"
+            ) {
+                return LOGO_ASTER_URL;
+            }
+
+            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
+
+            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (matchSlash && matchSlash[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
+            }
+
+            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (matchQuery && matchQuery[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
+            }
+
+            return propre;
+        }
+
+        function compterCategories(items, extractFn, fallbackLabel) {
+            const map = new Map();
+            items.forEach(item => {
+                const raw = extractFn(item);
+                const label = (raw && String(raw).trim()) ? String(raw).trim() : fallbackLabel;
+                map.set(label, (map.get(label) || 0) + 1);
+            });
+            return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+        }
+
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 10 (JS) : CHARGEMENT JSONP DEPUIS GOOGLE APPS SCRIPT
+           ===================================================================== */
+        function chargerDonnees() {
+            const oldScript = document.getElementById("jsonp-dashboard-script");
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement("script");
+            script.id = "jsonp-dashboard-script";
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesDashboard&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("last-update").textContent = "Erreur de connexion";
+                document.getElementById("dashboard-table-body").innerHTML =
+                    `<tr><td colspan="5" class="empty-msg">Impossible de charger les données depuis le serveur.</td></tr>`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function traiterDonneesDashboard(response) {
+            if (!response || !response.success || !Array.isArray(response.members)) return;
+
+            allMembers = response.members;
+            const now = new Date();
+            document.getElementById("last-update").textContent =
+                "MAJ " + now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+            mettreAJourKPIs(allMembers);
+            mettreAJourGraphiques(allMembers);
+            afficherInstitutions(allMembers);
+            appliquerFiltresTableau();
+        }
+
+        /* =====================================================================
+           RUBRIQUE 11 (JS) : MISE À JOUR DES KPI ET GRAPHIQUES CHART.JS
+           ===================================================================== */
+        function mettreAJourKPIs(membres) {
+            const total = membres.length;
+            const nbPresent = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const nbSorti = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const nbInscrit = membres.filter(m => {
+                const s = (m.statut || "Inscrit").trim();
+                return s !== "Présent" && s !== "Sorti";
+            }).length;
+
+            const pctPresent = total > 0 ? Math.round((nbPresent / total) * 100) : 0;
+            const pctSorti = total > 0 ? Math.round((nbSorti / total) * 100) : 0;
+
+            const regimes = compterCategories(membres, m => m.regime, "Aucun");
+            const institutions = compterCategories(membres, m => m.institution, "Non précisée");
+
+            document.getElementById("kpi-present").textContent = nbPresent;
+            document.getElementById("kpi-present-pct").textContent = `${pctPresent} % des inscrits`;
+            document.getElementById("kpi-sorti").textContent = nbSorti;
+            document.getElementById("kpi-sorti-pct").textContent = `${pctSorti} % des inscrits`;
+            document.getElementById("kpi-inscrit").textContent = nbInscrit;
+            document.getElementById("kpi-total").textContent = total;
+            document.getElementById("kpi-inst-count").textContent =
+                `${institutions.length} institution(s) • ${regimes.length} régime(s)`;
+        }
+
+        function creerOuMajChart(key, canvasId, config) {
+            if (charts[key]) {
+                charts[key].data = config.data;
+                charts[key].options = config.options;
+                charts[key].update();
+                return;
+            }
+            const ctx = document.getElementById(canvasId).getContext("2d");
+            charts[key] = new Chart(ctx, config);
+        }
+
+        function mettreAJourGraphiques(membres) {
+            const nbPresent = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const nbSorti = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const nbInscrit = membres.filter(m => {
+                const s = (m.statut || "Inscrit").trim();
+                return s !== "Présent" && s !== "Sorti";
+            }).length;
+
+            creerOuMajChart("statuts", "chartStatuts", {
+                type: "doughnut",
+                data: {
+                    labels: ["Présents", "Sortis", "Inscrits"],
+                    datasets: [{
+                        data: [nbPresent, nbSorti, nbInscrit],
+                        backgroundColor: ["#10b981", "#ef4444", "#29b6f6"],
+                        borderWidth: 3,
+                        borderColor: "#ffffff",
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "62%",
+                    plugins: {
+                        legend: { position: "bottom", labels: { padding: 16, font: { weight: "600" } } }
+                    }
+                }
+            });
+
+            const regimeEntries = compterCategories(membres, m => m.regime, "Aucun / Standard");
+            creerOuMajChart("regimes", "chartRegimes", {
+                type: "bar",
+                data: {
+                    labels: regimeEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Participants",
+                        data: regimeEntries.map(e => e[1]),
+                        backgroundColor: regimeEntries.map((_, idx) => PALETTE[idx % PALETTE.length]),
+                        borderRadius: 8,
+                        maxBarThickness: 34
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#f1f5f9" } },
+                        y: { grid: { display: false }, ticks: { font: { weight: "600" } } }
+                    }
+                }
+            });
+
+            const titreEntries = compterCategories(membres, m => m.titre, "Non précisé");
+            creerOuMajChart("titres", "chartTitres", {
+                type: "bar",
+                data: {
+                    labels: titreEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Membres",
+                        data: titreEntries.map(e => e[1]),
+                        backgroundColor: titreEntries.map((_, idx) => PALETTE[(idx + 2) % PALETTE.length]),
+                        borderRadius: 8,
+                        maxBarThickness: 42
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#f1f5f9" } },
+                        x: { grid: { display: false }, ticks: { font: { weight: "600" } } }
+                    }
+                }
+            });
+
+            const instEntries = compterCategories(membres, m => m.institution, "Non précisée").slice(0, 8);
+            creerOuMajChart("institutions", "chartInstitutions", {
+                type: "bar",
+                data: {
+                    labels: instEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Inscrits",
+                        data: instEntries.map(e => e[1]),
+                        backgroundColor: "#0284c7",
+                        borderRadius: 8,
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#f1f5f9" } },
+                        y: { grid: { display: false }, ticks: { font: { weight: "600" } } }
+                    }
+                }
+            });
+        }
+
+        /* =====================================================================
+           RUBRIQUE 12 (JS) : FENÊTRE MODALE (4 ONGLETS KPI & PARTICIPANT)
+           ===================================================================== */
+        function rendreCarteMembreModale(m) {
+            const statut = (m.statut || "Inscrit").trim();
+            let badgeClass = "status-inscrit";
+            let timeColor = "#0369a1";
+            if (statut === "Présent") {
+                badgeClass = "status-present";
+                timeColor = "#15803d";
+            } else if (statut === "Sorti") {
+                badgeClass = "status-sorti";
+                timeColor = "#b91c1c";
+            }
+
+            const photo = resoudrePhotoUrl(m.photo);
+            const titre = (m.titre && m.titre.trim()) ? m.titre.trim() : "Non précisé";
+            const inst = (m.institution && m.institution.trim()) ? m.institution.trim() : "Non précisée";
+            const email = (m.email && m.email.trim()) ? m.email.trim() : "Non renseigné";
+            const regime = (m.regime && m.regime.trim()) ? m.regime.trim() : "Aucun";
+            const rawTime = statut === "Sorti"
+                ? (m.depart && m.depart !== "--:--" ? m.depart : m.heure)
+                : (m.arrivee && m.arrivee !== "--:--" ? m.arrivee : m.heure);
+            const heureCourte = formaterHeureCourte(rawTime);
+
+            const arriveeTxt = (m.arrivee && m.arrivee !== "--:--") ? m.arrivee : "--:--";
+            const departTxt = (m.depart && m.depart !== "--:--") ? m.depart : "--:--";
+
+            return `
+                <div class="modal-member-item">
+                    <div class="modal-member-left">
+                        <img src="${photo}" alt="${m.nom || "Membre"}"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             class="modal-member-avatar">
+                        <div>
+                            <div class="modal-member-name">
+                                ${m.nom || ""}
+                                <span style="color:#64748b;font-weight:600;font-size:12px;">(${m.id || ""})</span>
+                            </div>
+                            <div class="modal-member-lines">
+                                <div><span class="modal-field-label">🏅 Titre :</span> <strong>${titre}</strong></div>
+                                <div><span class="modal-field-label">🏥 Institution :</span> <strong>${inst}</strong></div>
+                                <div><span class="modal-field-label">📧 E-mail :</span> <strong>${email}</strong></div>
+                                <div><span class="modal-field-label">🍽️ Régime :</span> <strong>${regime}</strong></div>
+                                <div><span class="modal-field-label">🕒 Arrivée / Départ :</span> <strong>${arriveeTxt}</strong> / <strong>${departTxt}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-member-right">
+                        <span class="status-badge ${badgeClass}">${statut}</span>
+                        ${heureCourte ? `<div class="modal-member-time" style="color:${timeColor};">${heureCourte}</div>` : ""}
+                    </div>
+                </div>
+            `;
+        }
+
+        function ouvrirModaleKPI(categorie) {
+            let liste = [];
+            let titreModal = "";
+            let badgeBg = "#e0f2fe";
+            let badgeColor = "#0369a1";
+
+            if (categorie === "Présent") {
+                liste = allMembers.filter(m => (m.statut || "").trim() === "Présent");
+                titreModal = "🟢 Membres Présents";
+                badgeBg = "#dcfce7";
+                badgeColor = "#15803d";
+            } else if (categorie === "Sorti") {
+                liste = allMembers.filter(m => (m.statut || "").trim() === "Sorti");
+                titreModal = "🔴 Membres Sortis";
+                badgeBg = "#fee2e2";
+                badgeColor = "#b91c1c";
+            } else if (categorie === "Inscrit") {
+                liste = allMembers.filter(m => {
+                    const s = (m.statut || "Inscrit").trim();
+                    return s !== "Présent" && s !== "Sorti";
+                });
+                titreModal = "🔵 Inscrits (en attente d'entrée)";
+                badgeBg = "#e0f2fe";
+                badgeColor = "#0369a1";
+            } else {
+                liste = allMembers.slice();
+                titreModal = "📋 Tous les Inscrits";
+                badgeBg = "#e0e7ff";
+                badgeColor = "#3730a3";
+            }
+
+            document.getElementById("kpi-modal-title").textContent = titreModal;
+            const countBadge = document.getElementById("kpi-modal-count");
+            countBadge.textContent = `${liste.length} membre(s)`;
+            countBadge.style.background = badgeBg;
+            countBadge.style.color = badgeColor;
+
+            const bodyEl = document.getElementById("kpi-modal-body");
+            bodyEl.innerHTML = liste.length === 0
+                ? `<div class="empty-msg">Aucun membre dans cette catégorie.</div>`
+                : liste.map(rendreCarteMembreModale).join("");
+
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function ouvrirModaleParticipant(index) {
+            const membre = displayedMembers[index];
+            if (!membre) return;
+
+            const statut = (membre.statut || "Inscrit").trim();
+            let badgeBg = "#e0f2fe";
+            let badgeColor = "#0369a1";
+            if (statut === "Présent") {
+                badgeBg = "#dcfce7";
+                badgeColor = "#15803d";
+            } else if (statut === "Sorti") {
+                badgeBg = "#fee2e2";
+                badgeColor = "#b91c1c";
+            }
+
+            document.getElementById("kpi-modal-title").textContent = `👤 ${membre.nom || "Participant"}`;
+            const countBadge = document.getElementById("kpi-modal-count");
+            countBadge.textContent = membre.id || statut;
+            countBadge.style.background = badgeBg;
+            countBadge.style.color = badgeColor;
+
+            document.getElementById("kpi-modal-body").innerHTML = rendreCarteMembreModale(membre);
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function fermerModaleKPI() {
+            document.getElementById("kpi-modal").classList.remove("active");
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") fermerModaleKPI();
+        });
+
+        /* =====================================================================
+           RUBRIQUE 13 (JS) : LISTE INSTITUTIONS & TABLEAU FILTRABLE
+           ===================================================================== */
+        function afficherInstitutions(membres) {
+            const entries = compterCategories(membres, m => m.institution, "Non précisée");
+            const container = document.getElementById("institutions-list");
+            document.getElementById("badge-nb-inst").textContent = entries.length;
+
+            if (entries.length === 0) {
+                container.innerHTML = `<div class="empty-msg">Aucune institution renseignée.</div>`;
+                return;
+            }
+
+            container.innerHTML = entries.map(([nomInst, count]) => `
+                <div class="inst-item" onclick="filtrerParTexte('${nomInst.replace(/'/g, "\\'")}')">
+                    <span class="inst-name" title="${nomInst}">${nomInst}</span>
+                    <span class="inst-count">${count}</span>
+                </div>
+            `).join("");
+        }
+
+        function filtrerParTexte(texte) {
+            const input = document.getElementById("filter-search");
+            input.value = (input.value === texte) ? "" : texte;
+            appliquerFiltresTableau();
+        }
+
+        function appliquerFiltresTableau() {
+            const q = document.getElementById("filter-search").value.toLowerCase().trim();
+            const statutFiltre = document.getElementById("filter-statut").value.trim();
+
+            displayedMembers = allMembers.filter(m => {
+                const statut = (m.statut || "Inscrit").trim();
+                if (statutFiltre && statut !== statutFiltre) return false;
+
+                if (!q) return true;
+                const haystack = [
+                    m.nom, m.id, m.titre, m.institution, m.regime, m.email, statut
+                ].filter(Boolean).join(" ").toLowerCase();
+                return haystack.includes(q);
+            });
+
+            document.getElementById("badge-nb-filtered").textContent = `${displayedMembers.length} affiché(s)`;
+            const tbody = document.getElementById("dashboard-table-body");
+
+            if (displayedMembers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = displayedMembers.map((m, idx) => {
+                const statut = (m.statut || "Inscrit").trim();
+                let badgeClass = "status-inscrit";
+                if (statut === "Présent") badgeClass = "status-present";
+                else if (statut === "Sorti") badgeClass = "status-sorti";
+
+                const photo = resoudrePhotoUrl(m.photo);
+                const titre = (m.titre && m.titre.trim()) ? m.titre.trim() : "—";
+                const inst = (m.institution && m.institution.trim()) ? m.institution.trim() : "—";
+                const regime = (m.regime && m.regime.trim()) ? m.regime.trim() : "Aucun";
+
+                return `
+                    <tr class="clickable-row" onclick="ouvrirModaleParticipant(${idx})">
+                        <td>
+                            <img src="${photo}" alt="${m.nom || ""}"
+                                 onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                                 class="avatar-sm">
+                            <strong>${m.nom || ""}</strong>
+                        </td>
+                        <td>${titre}</td>
+                        <td>${inst}</td>
+                        <td>${regime}</td>
+                        <td><span class="status-badge ${badgeClass}">${statut}</span></td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        document.getElementById("filter-search").addEventListener("input", appliquerFiltresTableau);
+        document.getElementById("filter-statut").addEventListener("change", appliquerFiltresTableau);
+
+        /* =====================================================================
+           RUBRIQUE 14 (JS) : INITIALISATION ET RAFRAÎCHISSEMENT AUTO
+           ===================================================================== */
+        window.onload = () => {
+            chargerDonnees();
+            setInterval(chargerDonnees, 15000);
+        };
+    </script>
+</body>
+</html>
