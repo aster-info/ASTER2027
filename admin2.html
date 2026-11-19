@@ -45,4 +45,179 @@
                 class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm">
         </div>
 
-        <div id="members
+        <div id="members-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            <div class="text-center text-slate-400 py-8">Chargement des membres...</div>
+        </div>
+    </div>
+
+    <!-- ========================================================================== -->
+    <!-- FENÊTRE MODALE DE DÉTAIL DU MEMBRE -->
+    <!-- ========================================================================== -->
+    <div id="member-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 relative flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+            
+            <!-- Photo du membre affichée dans la modale -->
+            <img id="modal-member-photo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Photo du membre" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100 shadow-md mb-4">
+            
+            <h3 id="modal-name" class="text-xl font-bold text-slate-900">Nom du membre</h3>
+            <p id="modal-id" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full mt-1 mb-2">MBR-0000</p>
+            <p id="modal-titre" class="text-sm text-slate-500 mb-6">Titre — Institution</p>
+
+            <div class="w-full bg-slate-50 rounded-2xl p-4 space-y-3 text-left text-sm mb-6 border border-slate-100">
+                <div class="flex justify-between"><span class="text-slate-500">📧 Email :</span> <span id="modal-email" class="font-medium text-slate-800">--</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">📥 Arrivée :</span> <span id="modal-arrivee" class="font-medium text-slate-800">--:--</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">📤 Départ :</span> <span id="modal-depart" class="font-medium text-slate-800">--:--</span></div>
+                <div class="flex justify-between"><span class="text-slate-500">📌 Statut :</span> <span id="modal-statut" class="font-bold text-slate-800">--</span></div>
+            </div>
+
+            <button onclick="fermerModal()" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm">
+                Fermer
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================================================== -->
+    <!-- SCRIPT JAVASCRIPT -->
+    <!-- ========================================================================== -->
+    <script>
+        // URL par défaut du logo ASTER en cas d'absence de photo ou d'erreur de chargement
+        const LOGO_ASTER_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
+
+        // ⚠️ REMPLACEZ CETTE URL PAR VOTRE URL DE WEB APP GOOGLE APPS SCRIPT DÉPLOYÉE (/exec)
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+
+        let allMembers = [];
+
+        /**
+         * Charge la liste des membres via JSONP
+         */
+        function chargerMembres() {
+            const script = document.createElement('script');
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres&_t=${Date.now()}`;
+            document.body.appendChild(script);
+            script.onerror = () => {
+                document.getElementById('members-list').innerHTML = `<div class="text-center text-rose-500 py-4">Erreur de chargement des données.</div>`;
+            };
+        }
+
+        /**
+         * Reçoit et traite les données envoyées par Code.gs
+         */
+        function traiterDonneesMembres(response) {
+            if (response && response.success) {
+                allMembers = response.members;
+                afficherMembres(allMembers);
+                mettreAJourCompteurs(allMembers);
+            }
+        }
+
+        /**
+         * Affiche la liste des cartes membres
+         */
+        function afficherMembres(membres) {
+            const listContainer = document.getElementById('members-list');
+            listContainer.innerHTML = '';
+
+            if (membres.length === 0) {
+                listContainer.innerHTML = `<div class="text-center text-slate-400 py-4">Aucun membre trouvé.</div>`;
+                return;
+            }
+
+            membres.forEach(m => {
+                let badgeColor = 'bg-slate-100 text-slate-600';
+                if (m.statut === 'Présent') badgeColor = 'bg-emerald-100 text-emerald-700';
+                if (m.statut === 'Sorti') badgeColor = 'bg-sky-100 text-sky-700';
+
+                const photoSrc = (m.photo && m.photo.trim() !== "") ? m.photo.trim() : LOGO_ASTER_URL;
+
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-slate-100 transition-all cursor-pointer';
+                card.onclick = () => ouvrirModal(m);
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${photoSrc}" alt="Avatar" onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';" class="w-12 h-12 rounded-full object-cover border border-slate-200">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${m.nom}</h4>
+                            <p class="text-xs text-slate-400 font-medium">${m.id}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeColor} mb-1">${m.statut}</span>
+                        <p class="text-xs text-slate-400">${m.heure}</p>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        /**
+         * Met à jour les compteurs In / Out / Inscrits
+         */
+        function mettreAJourCompteurs(membres) {
+            const inCount = membres.filter(m => m.statut === 'Présent').length;
+            const outCount = membres.filter(m => m.statut === 'Sorti').length;
+            const totalCount = membres.length;
+
+            document.getElementById('count-in').textContent = inCount;
+            document.getElementById('count-out').textContent = outCount;
+            document.getElementById('count-total').textContent = totalCount;
+        }
+
+        /**
+         * Filtre en temps réel par nom ou ID
+         */
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const filtered = allMembers.filter(m => 
+                m.nom.toLowerCase().includes(query) || m.id.toLowerCase().includes(query)
+            );
+            afficherMembres(filtered);
+        });
+
+        /**
+         * Ouvre la fenêtre modale avec la photo du membre et ses détails
+         */
+        function ouvrirModal(m) {
+            const imgModal = document.getElementById('modal-member-photo');
+            const photoMembre = (m && m.photo && typeof m.photo === 'string') ? m.photo.trim() : "";
+
+            // Réinitialise le gestionnaire d'erreur avant d'assigner la nouvelle source
+            imgModal.onerror = function() {
+                this.onerror = null;
+                this.src = LOGO_ASTER_URL;
+            };
+
+            // Injecte la photo du membre si disponible, sinon le logo ASTER
+            imgModal.src = photoMembre !== "" ? photoMembre : LOGO_ASTER_URL;
+
+            document.getElementById('modal-name').textContent = (m && m.nom) ? m.nom : "Nom inconnu";
+            document.getElementById('modal-id').textContent = (m && m.id) ? m.id : "MBR-0000";
+            document.getElementById('modal-titre').textContent = (m && m.titre) ? m.titre : "Membre ASTER";
+            document.getElementById('modal-email').textContent = (m && m.email) ? m.email : "Non renseigné";
+            document.getElementById('modal-arrivee').textContent = (m && m.arrivee) ? m.arrivee : "--:--";
+            document.getElementById('modal-depart').textContent = (m && m.depart) ? m.depart : "--:--";
+            document.getElementById('modal-statut').textContent = (m && m.statut) ? m.statut : "Inscrit";
+
+            document.getElementById('member-modal').classList.remove('hidden');
+            document.getElementById('member-modal').classList.add('flex');
+        }
+
+        /**
+         * Ferme la fenêtre modale
+         */
+        function fermerModal() {
+            document.getElementById('member-modal').classList.remove('flex');
+            document.getElementById('member-modal').classList.add('hidden');
+        }
+
+        /**
+         * Chargement initial et rafraîchissement automatique toutes les 10 secondes
+         */
+        window.onload = () => {
+            chargerMembres();
+            setInterval(chargerMembres, 10000);
+        };
+    </script>
+</body>
+</html>
