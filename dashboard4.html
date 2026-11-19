@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- =====================================================================
+         RUBRIQUE 1 : MÉTADONNÉES, CHART.JS ET TITRE
+         ===================================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ASTER</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* =====================================================================
+           RUBRIQUE 2 : VARIABLES ET STYLES GÉNÉRAUX (CLAIR & SOMBRE)
+           ===================================================================== */
+        :root {
+            --bg-top: #f8fafc;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --card-soft: #f8fafc;
+            --row-hover: #f0f9ff;
+            --text: #0f172a;
+            --text-secondary: #334155;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --input-border: #cbd5e1;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --primary-dark: #0f2942;
+            --green: #10b981;
+            --green-soft: #dcfce7;
+            --green-text: #15803d;
+            --red: #ef4444;
+            --red-soft: #fee2e2;
+            --red-text: #b91c1c;
+            --blue: #29b6f6;
+            --blue-soft: #e0f2fe;
+            --blue-text: #0369a1;
+            --ghost-bg: #f1f5f9;
+            --ghost-hover: #e2e8f0;
+            --tag-bg: #f1f5f9;
+            --tag-text: #475569;
+            --grid-line: #f1f5f9;
+            --chart-border: #ffffff;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        body.dark-mode {
+            --bg-top: #0b1120;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-soft: #0f172a;
+            --row-hover: #273549;
+            --text: #f8fafc;
+            --text-secondary: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #334155;
+            --input-border: #475569;
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --primary-dark: #f1f5f9;
+            --green: #10b981;
+            --green-soft: rgba(16, 185, 129, 0.18);
+            --green-text: #4ade80;
+            --red: #ef4444;
+            --red-soft: rgba(239, 68, 68, 0.18);
+            --red-text: #f87171;
+            --blue: #38bdf8;
+            --blue-soft: rgba(56, 189, 248, 0.18);
+            --blue-text: #7dd3fc;
+            --ghost-bg: #334155;
+            --ghost-hover: #475569;
+            --tag-bg: #334155;
+            --tag-text: #cbd5e1;
+            --grid-line: #334155;
+            --chart-border: #1e293b;
+            --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 28px 18px 56px;
+            transition: background-color 0.25s, color 0.25s;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 3 : EN-TÊTE, BARRE D'ACTIONS ET BOUTON THÈME EN BAS À DROITE
+           ===================================================================== */
+        .top-header {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px 26px 56px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .header-logo {
+            width: 78px;
+            height: 78px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-soft);
+            border: 1px solid var(--border);
+            padding: 9px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-1px); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-ghost {
+            background: var(--ghost-bg);
+            color: var(--primary-dark);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { background: var(--ghost-hover); }
+
+        .theme-toggle-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 14px;
+            border: 1px solid var(--border);
+            background: var(--card-soft);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 6px 13px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-1px);
+            background: var(--ghost-hover);
+        }
+
+        /* =====================================================================
+           RUBRIQUE 4 : CARTES KPI CLIQUABLES (OUVRANT LA FENÊTRE MODALE)
+           ===================================================================== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--input-border);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .kpi-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .kpi-present .kpi-value { color: var(--green-text); }
+        .kpi-present .kpi-badge { background: var(--green-soft); color: var(--green-text); }
+
+        .kpi-sorti .kpi-value { color: var(--red-text); }
+        .kpi-sorti .kpi-badge { background: var(--red-soft); color: var(--red-text); }
+
+        .kpi-inscrit .kpi-value { color: var(--blue-text); }
+        .kpi-inscrit .kpi-badge { background: var(--blue-soft); color: var(--blue-text); }
+
+        .kpi-total .kpi-value { color: var(--primary-dark); }
+        .kpi-total .kpi-badge { background: rgba(99, 102, 241, 0.16); color: #6366f1; }
+
+        /* =====================================================================
+           RUBRIQUE 5 : GRILLE DES GRAPHIQUES ANALYTIQUES
+           ===================================================================== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            min-height: 350px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .card-tag {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+        }
+
+        .chart-box {
+            position: relative;
+            flex: 1;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 6 : SYNTHÈSE DES INSTITUTIONS & LISTE FILTRABLE
+           ===================================================================== */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.35fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 960px) {
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .inst-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 410px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .inst-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--card-soft);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+
+        .inst-item:hover {
+            background: var(--row-hover);
+            border-color: var(--primary);
+        }
+
+        .inst-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .inst-count {
+            background: var(--blue-soft);
+            color: var(--blue-text);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .search-input, .select-filter {
+            padding: 10px 14px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--card-soft);
+            outline: none;
+        }
+
+        .search-input { flex: 1; min-width: 180px; }
+        .search-input:focus, .select-filter:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+        }
+
+        .members-table-wrap {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 10px;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1.5px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--card);
+        }
+
+        td {
+            padding: 10px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tbody tr.clickable-row {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        tbody tr.clickable-row:hover td {
+            background: var(--row-hover);
+        }
+
+        .avatar-sm {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 1.5px solid var(--input-border);
+            background: var(--card);
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .status-present { background: var(--green-soft); color: var(--green-text); }
+        .status-sorti { background: var(--red-soft); color: var(--red-text); }
+        .status-inscrit { background: var(--blue-soft); color: var(--blue-text); }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--muted);
+            padding: 28px 12px;
+            font-size: 14px;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 7 : FENÊTRE MODALE DE DÉTAILS (KPI & PARTICIPANT)
+           ===================================================================== */
+        .kpi-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            z-index: 2000;
+        }
+
+        .kpi-modal-backdrop.active {
+            display: flex;
+        }
+
+        .kpi-modal-card {
+            background: var(--card);
+            width: 100%;
+            max-width: 700px;
+            max-height: 85vh;
+            border-radius: 24px;
+            box-shadow: 0 24px 55px rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .kpi-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-soft);
+        }
+
+        .kpi-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kpi-modal-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .kpi-modal-count {
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: var(--blue-soft);
+            color: var(--blue-text);
+        }
+
+        .kpi-modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--input-border);
+            background: var(--card);
+            color: var(--text-secondary);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kpi-modal-close:hover {
+            background: var(--ghost-hover);
+        }
+
+        .kpi-modal-body {
+            padding: 18px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-member-item {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--card-soft);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .modal-member-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .modal-member-avatar {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 2.5px solid var(--input-border);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            background: var(--card);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .modal-member-name {
+            font-size: 15.5px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .modal-member-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+        }
+
+        .modal-field-label {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .modal-member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-shrink: 0;
+            gap: 10px;
+        }
+
+        .modal-member-top-status {
+            text-align: right;
+        }
+
+        .modal-member-time {
+            font-size: 12.5px;
+            font-weight: 800;
+            margin-top: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .email-sent-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .email-pending-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #c2410c;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        body.dark-mode .email-sent-badge {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(52, 211, 153, 0.35);
+            color: #6ee7b7;
+        }
+
+        body.dark-mode .email-pending-badge {
+            background: rgba(249, 115, 22, 0.16);
+            border-color: rgba(251, 146, 60, 0.35);
+            color: #fdba74;
+        }
+
+        .kpi-modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--card-soft);
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- =================================================================
+             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD + BOUTON THÈME EN BAS À DROITE
+             ================================================================= -->
+        <header class="top-header">
+            <div class="brand">
+                <img id="header-logo" src="./logo.png" alt="Logo ASTER" class="header-logo">
+                <div>
+                    <h1 class="brand-title">Tableau de Bord ASTER</h1>
+                    <p class="brand-subtitle">Présences, régimes alimentaires, titres et institutions en temps réel</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="live-pill">
+                    <span class="live-dot"></span>
+                    <span id="last-update">Chargement...</span>
+                </div>
+                <button type="button" class="btn btn-ghost" onclick="chargerDonnees()">🔄 Actualiser</button>
+                <a href="./admin4.html" class="btn btn-primary">🛡️ Vue Admin</a>
+            </div>
+
+            <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="basculerTheme()" aria-label="Basculer mode sombre ou clair">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-label">Mode sombre</span>
+            </button>
+        </header>
+
+        <!-- =================================================================
+             RUBRIQUE 4 (HTML) : 4 ONGLETS / CARTES KPI AVEC MODALE DE DÉTAILS
+             ================================================================= -->
+        <section class="kpi-grid" aria-label="Indicateurs clés">
+            <div class="kpi-card kpi-present" onclick="ouvrirModaleKPI('Présent')">
+                <div>
+                    <div class="kpi-label">Présents</div>
+                    <div id="kpi-present" class="kpi-value">0</div>
+                    <div id="kpi-present-pct" class="kpi-sub">0 % des inscrits</div>
+                </div>
+                <div class="kpi-badge">IN</div>
+            </div>
+
+            <div class="kpi-card kpi-sorti" onclick="ouvrirModaleKPI('Sorti')">
+                <div>
+                    <div class="kpi-label">Sortis</div>
+                    <div id="kpi-sorti" class="kpi-value">0</div>
+                    <div id="kpi-sorti-pct" class="kpi-sub">0 % des inscrits</div>
+                </div>
+                <div class="kpi-badge">OUT</div>
+            </div>
+
+            <div class="kpi-card kpi-inscrit" onclick="ouvrirModaleKPI('Inscrit')">
+                <div>
+                    <div class="kpi-label">Inscrits (en attente)</div>
+                    <div id="kpi-inscrit" class="kpi-value">0</div>
+                    <div class="kpi-sub">Non encore entrés</div>
+                </div>
+                <div class="kpi-badge">REG</div>
+            </div>
+
+            <div class="kpi-card kpi-total" onclick="ouvrirModaleKPI('TOUS')">
+                <div>
+                    <div class="kpi-label">Total Inscrits</div>
+                    <div id="kpi-total" class="kpi-value">0</div>
+                    <div id="kpi-inst-count" class="kpi-sub">0 institution(s)</div>
+                </div>
+                <div class="kpi-badge">ALL</div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 5 (HTML) : GRAPHIQUES ANALYTIQUES
+             ================================================================= -->
+        <section class="charts-grid" aria-label="Graphiques statistiques">
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">📊 Statuts des participants</h2>
+                    <span class="card-tag">Présents / Sortis / Inscrits</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartStatuts"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🍽️ Régimes alimentaires</h2>
+                    <span class="card-tag">Par catégorie</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartRegimes"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏅 Titres des membres</h2>
+                    <span class="card-tag">Répartition</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartTitres"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏥 Institutions (Top)</h2>
+                    <span class="card-tag">Effectifs</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartInstitutions"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 6 (HTML) : DÉTAIL INSTITUTIONS & LISTE PARTICIPANTS
+             ================================================================= -->
+        <section class="bottom-grid">
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏢 Toutes les institutions</h2>
+                    <span id="badge-nb-inst" class="card-tag">0</span>
+                </div>
+                <div id="institutions-list" class="inst-list">
+                    <div class="empty-msg">Chargement...</div>
+                </div>
+            </article>
+
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">👥 Participants</h2>
+                    <span id="badge-nb-filtered" class="card-tag">0 affiché(s)</span>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" id="filter-search" class="search-input" placeholder="Rechercher nom, titre, institution ou régime...">
+                    <select id="filter-statut" class="select-filter">
+                        <option value="">Tous statuts</option>
+                        <option value="Présent">Présent</option>
+                        <option value="Sorti">Sorti</option>
+                        <option value="Inscrit">Inscrit</option>
+                    </select>
+                </div>
+
+                <div class="members-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Membre</th>
+                                <th>Titre</th>
+                                <th>Institution</th>
+                                <th>Régime</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <tr><td colspan="5" class="empty-msg">Chargement des données...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </div>
+
+    <!-- =====================================================================
+         RUBRIQUE 7 (HTML) : FENÊTRE MODALE DÉTAILS KPI & PARTICIPANT
+         ===================================================================== -->
+    <div id="kpi-modal" class="kpi-modal-backdrop" onclick="if(event.target === this) fermerModaleKPI()">
+        <div class="kpi-modal-card">
+            <div class="kpi-modal-header">
+                <div class="kpi-modal-title-wrap">
+                    <h2 id="kpi-modal-title" class="kpi-modal-title">Détails</h2>
+                    <span id="kpi-modal-count" class="kpi-modal-count">0 membre(s)</span>
+                </div>
+                <button type="button" class="kpi-modal-close" onclick="fermerModaleKPI()" aria-label="Fermer">✕</button>
+            </div>
+
+            <div id="kpi-modal-body" class="kpi-modal-body"></div>
+
+            <div class="kpi-modal-footer">
+                <button type="button" class="btn btn-primary" onclick="fermerModaleKPI()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME ET ÉTAT GLOBAL
+           ===================================================================== */
+        const LOGO_ASTER_URL = "./logo.png";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+        const THEME_STORAGE_KEY = "aster_dashboard_theme";
+
+        let allMembers = [];
+        let displayedMembers = [];
+        let charts = {};
+
+        const PALETTE = [
+            "#0284c7", "#10b981", "#f59e0b", "#8b5cf6",
+            "#ec4899", "#14b8a6", "#f97316", "#6366f1",
+            "#64748b", "#84cc16"
+        ];
+
+        function estModeSombre() {
+            return document.body.classList.contains("dark-mode");
+        }
+
+        function mettreAJourBoutonTheme() {
+            const dark = estModeSombre();
+            document.getElementById("theme-icon").textContent = dark ? "☀️" : "🌙";
+            document.getElementById("theme-label").textContent = dark ? "Mode clair" : "Mode sombre";
+        }
+
+        function appliquerThemeInitial() {
+            const saved = localStorage.getItem(THEME_STORAGE_KEY);
+            if (saved === "dark") {
+                document.body.classList.add("dark-mode");
+            } else {
+                document.body.classList.remove("dark-mode");
+            }
+            mettreAJourBoutonTheme();
+        }
+
+        function basculerTheme() {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem(THEME_STORAGE_KEY, estModeSombre() ? "dark" : "light");
+            mettreAJourBoutonTheme();
+            if (allMembers.length > 0) {
+                mettreAJourGraphiques(allMembers);
+            }
+        }
+
+        /* =====================================================================
+           RUBRIQUE 9 (JS) : RÉSOLUTION PHOTO & AGRÉGATION DES DONNÉES
+           ===================================================================== */
+        function resoudrePhotoUrl(url) {
+            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
+            const propre = url.trim();
+            const lower = propre.toLowerCase();
+
+            if (
+                !propre ||
+                lower === "attente" ||
+                lower === "en attente" ||
+                lower.includes("attente") ||
+                lower === "pending" ||
+                lower === "none" ||
+                lower === "null"
+            ) {
+                return LOGO_ASTER_URL;
+            }
+
+            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
+
+            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (matchSlash && matchSlash[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
+            }
+
+            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (matchQuery && matchQuery[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
+            }
+
+            return propre;
+        }
+
+        function compterCategories(items, extractFn, fallbackLabel) {
+            const map = new Map();
+            items.forEach(item => {
+                const raw = extractFn(item);
+                const label = (raw && String(raw).trim()) ? String(raw).trim() : fallbackLabel;
+                map.set(label, (map.get(label) || 0) + 1);
+            });
+            return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+        }
+
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
