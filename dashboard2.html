@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- =====================================================================
+         RUBRIQUE 1 : MÉTADONNÉES, CHART.JS ET TITRE
+         ===================================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ASTER</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* =====================================================================
+           RUBRIQUE 2 : VARIABLES ET STYLES GÉNÉRAUX
+           ===================================================================== */
+        :root {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #0284c7;
+            --primary-dark: #0f2942;
+            --green: #10b981;
+            --green-soft: #dcfce7;
+            --green-text: #15803d;
+            --red: #ef4444;
+            --red-soft: #fee2e2;
+            --red-text: #b91c1c;
+            --blue: #29b6f6;
+            --blue-soft: #e0f2fe;
+            --blue-text: #0369a1;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 28px 18px 56px;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 3 : EN-TÊTE ET BARRE D'ACTIONS
+           ===================================================================== */
+        .top-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px 26px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .header-logo {
+            width: 78px;
+            height: 78px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display
