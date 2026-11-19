@@ -1,389 +1,612 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- ======================================================== -->
-    <!-- 1. LA STRUCTURE HTML ET CONFIGURATION GÉNÉRALE           -->
-    <!-- ======================================================== -->
+    <!-- =====================================================================
+         RUBRIQUE 1 : MÉTADONNÉES ET TITRE DE LA PAGE
+         ===================================================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - ASTER</title>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
+        /* =====================================================================
+           RUBRIQUE 2 : STYLES GÉNÉRAUX ET MISE EN PAGE
+           ===================================================================== */
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #1e293b;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 28px 16px 48px;
         }
 
-        .logo-container {
-            text-align: center;
-            margin-bottom: 10px;
+        /* =====================================================================
+           RUBRIQUE 3 : EN-TÊTE ADMIN (LOGO ASTER CONSERVÉ EN HAUT)
+           ===================================================================== */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
         }
 
-        .logo-container img {
-            width: 180px;
-            height: auto;
+        .header-logo {
+            width: 148px;
+            height: 148px;
             object-fit: contain;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
         }
 
-        h1 {
-            color: #1e293b;
-            font-size: 24px;
-            margin-bottom: 15px;
+        .header-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f2942;
+            letter-spacing: -0.02em;
         }
 
-        .stats-container {
+        /* =====================================================================
+           RUBRIQUE 4 : BARRE DES COMPTEURS (In / Out / Inscrits)
+           ===================================================================== */
+        .counters-bar {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
-        .stat-badge {
-            background: white;
-            padding: 8px 18px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            font-weight: bold;
-            font-size: 14px;
-            color: #1e293b;
-            display: flex;
+        .counter-pill {
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 8px 16px;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            border: 1px solid #eef2f6;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f2942;
         }
 
-        .stat-badge span {
-            padding: 2px 8px;
-            border-radius: 10px;
-            color: white;
+        .badge-count {
+            color: #ffffff;
             font-size: 12px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            line-height: 1.2;
         }
 
         .badge-in { background-color: #10b981; }
         .badge-out { background-color: #ef4444; }
-        .badge-inscrits { background-color: #38bdf8; }
+        .badge-total { background-color: #29b6f6; }
 
+        /* =====================================================================
+           RUBRIQUE 5 : CARTE PRINCIPALE, RECHERCHE ET LISTE DES MEMBRES
+           ===================================================================== */
         .main-card {
-            background: white;
+            background: #ffffff;
             width: 100%;
-            max-width: 500px;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            padding: 20px;
-            box-sizing: border-box;
+            max-width: 680px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+            border: 1px solid #eef2f6;
         }
 
         .search-box {
+            margin-bottom: 18px;
+        }
+
+        .search-input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #cbd5e1;
+            padding: 13px 16px;
+            font-size: 15px;
+            color: #334155;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
             border-radius: 12px;
-            font-size: 14px;
             outline: none;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .search-box:focus {
-            border-color: #38bdf8;
+        .search-input::placeholder { color: #94a3b8; }
+        .search-input:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
         }
 
-        .member-list {
+        .members-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 400px;
+            max-height: 430px;
             overflow-y: auto;
+            padding-right: 6px;
         }
 
-        .member-item {
+        .members-list::-webkit-scrollbar { width: 8px; }
+        .members-list::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px; }
+        .members-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+
+        .member-row {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            justify-content: space-between;
+            padding: 14px 18px;
             background: #f8fafc;
-            border-radius: 10px;
             border: 1px solid #e2e8f0;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.15s, transform 0.15s, border-color 0.15s;
         }
 
-        .member-item:hover {
-            border-color: #38bdf8;
-            background: #f0f9ff;
+        .member-row:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
         }
 
         .member-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
+            min-width: 0;
         }
 
-        .member-photo {
-            width: 45px;
-            height: 45px;
+        .member-avatar {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             object-fit: cover;
-            background: #cbd5e1;
+            flex-shrink: 0;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
         }
 
-        .member-details {
+        .member-info {
             display: flex;
             flex-direction: column;
+            gap: 3px;
+            min-width: 0;
         }
 
         .member-name {
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 700;
             color: #1e293b;
-            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .member-id {
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 500;
             color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .member-right {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 4px;
+            gap: 5px;
+            flex-shrink: 0;
+            margin-left: 12px;
         }
 
         .status-badge {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 8px;
+            line-height: 1.2;
         }
 
-        .status-badge.present { background-color: #d1fae5; color: #065f46; }
-        .status-badge.sorti { background-color: #fee2e2; color: #991b1b; }
-        .status-badge.inscrit { background-color: #e0f2fe; color: #0369a1; }
+        .status-present { background-color: #dcfce7; color: #15803d; }
+        .status-sorti { background-color: #e0f2fe; color: #0369a1; }
+        .status-inscrit { background-color: #f1f5f9; color: #475569; }
 
-        .heure-text {
-            font-size: 11px;
+        .member-time {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f766e;
+            font-variant-numeric: tabular-nums;
         }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 1000;
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 32px 12px;
+            font-size: 14px;
         }
-        .modal-overlay.active { display: flex; }
-        .modal {
-            background: white; width: 90%; max-width: 400px; border-radius: 24px; padding: 25px;
-            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: scaleUp 0.2s ease;
+
+        /* =====================================================================
+           RUBRIQUE 6 : FENÊTRE MODALE (AFFICHE LA PHOTO DU MEMBRE)
+           ===================================================================== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
         }
-        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid #38bdf8; }
-        .modal h3 { margin: 0 0 4px 0; color: #1e293b; font-size: 20px; font-weight: 800; }
-        .modal-details { text-align: left; background: #f8fafc; padding: 15px; border-radius: 16px; margin: 20px 0; font-size: 14px; color: #334155; border: 1px solid #e2e8f0; }
-        .modal-details p { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .modal-details span { font-weight: 700; color: #0f172a; }
-        .btn-close { width: 100%; padding: 14px; background: #38bdf8; color: #0f172a; border: none; border-radius: 14px; font-size: 15px; font-weight: bold; cursor: pointer; }
-        .btn-close:hover { background: #0284c7; color: white; }
+
+        .modal-backdrop.active { display: flex; }
+
+        .modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 26px;
+            padding: 28px 24px 24px;
+            box-shadow: 0 24px 50px rgba(15, 23, 42, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Photo ronde dédiée au membre dans la fenêtre modale */
+        .modal-photo {
+            width: 118px;
+            height: 118px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top; /* Centre bien le visage/haut de la photo */
+            border: 4px solid #e0f2fe;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+            margin-bottom: 14px;
+            background: #ffffff;
+        }
+
+        .modal-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .modal-id {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0284c7;
+            background: #f0f9ff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 8px;
+        }
+
+        .modal-titre {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0284c7;
+            margin-bottom: 20px;
+        }
+
+        .modal-details {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 22px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-label { color: #64748b; font-weight: 500; }
+        .modal-value { color: #0f172a; font-weight: 700; text-align: right; word-break: break-word; }
+
+        .modal-close-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            background: #29b6f6;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-close-btn:hover { background: #0288d1; }
     </style>
 </head>
 <body>
 
-    <!-- ======================================================== -->
-    <!-- A. LE CONTENEUR DU LOGO                                  -->
-    <!-- ======================================================== -->
-    <div class="logo-container">
-        <img src="logo.png" alt="Logo ASTER" onerror="this.src='https://via.placeholder.com/120'">
-    </div>
+    <!-- =========================================================================
+         RUBRIQUE 3 (HTML) : EN-TÊTE ADMIN AVEC LOGO ASTER
+         ========================================================================= -->
+    <header class="header">
+        <img id="header-logo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Logo ASTER" class="header-logo">
+        <h1 class="header-title">Administration</h1>
+    </header>
 
-    <!-- ======================================================== -->
-    <!-- B. LE TITRE PRINCIPAL                                    -->
-    <!-- ======================================================== -->
-    <h1>Administration</h1>
-
-    <!-- ======================================================== -->
-    <!-- C. LE BLOC DES STATISTIQUES GLOBALES                     -->
-    <!-- ======================================================== -->
-    <div class="stats-container">
-        <div class="stat-badge">In: <span class="badge-in" id="count-in">0</span></div>
-        <div class="stat-badge">Out: <span class="badge-out" id="count-out">0</span></div>
-        <div class="stat-badge">Inscrits: <span class="badge-inscrits" id="count-inscrits">0</span></div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- D. LA CARTE PRINCIPALE ET LA BARRE DE RECHERCHE          -->
-    <!-- ======================================================== -->
-    <div class="main-card">
-        <input type="text" id="search-input" class="search-box" placeholder="Rechercher un membre par nom ou ID..." oninput="filterMembers()">
-        
-        <div id="member-list" class="member-list">
-            <p style="text-align: center; color: #94a3b8; padding: 15px;">Chargement des données...</p>
+    <!-- =========================================================================
+         RUBRIQUE 4 (HTML) : COMPTEURS IN / OUT / INSCRITS
+         ========================================================================= -->
+    <section class="counters-bar" aria-label="Compteurs de présence">
+        <div class="counter-pill">
+            <span>In:</span>
+            <span id="count-in" class="badge-count badge-in">0</span>
         </div>
-    </div>
+        <div class="counter-pill">
+            <span>Out:</span>
+            <span id="count-out" class="badge-count badge-out">0</span>
+        </div>
+        <div class="counter-pill">
+            <span>Inscrits:</span>
+            <span id="count-total" class="badge-count badge-total">0</span>
+        </div>
+    </section>
 
-    <!-- ======================================================== -->
-    <!-- E. LA FENÊTRE MODALE (POPUP DE DÉTAIL D'UN MEMBRE)      -->
-    <!-- ======================================================== -->
-    <div id="modal" class="modal-overlay" onclick="closeModal()">
-        <div class="modal" onclick="event.stopPropagation()">
-            <img id="modal-photo" src="logo.png" alt="Photo" onerror="this.src='logo.png'">
-            <h3 id="modal-name">Nom Membre</h3>
-            <div id="modal-id" style="font-size: 12px; color: #64748b; font-weight: 600;">ID</div>
-            
-            <!-- CHANGEMENT : Titre agrandi (1_px) avec une marge supérieure (margin-top: 8px) pour créer un espace avec l'ID -->
-            <div id="modal-titre" style="font-size: 18px; color: #0284c7; font-weight: bold; margin-top: 8px; margin-bottom: 12px;"></div>
-            
+    <!-- =========================================================================
+         RUBRIQUE 5 (HTML) : RECHERCHE ET LISTE DES MEMBRES
+         ========================================================================= -->
+    <main class="main-card">
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Rechercher un membre par nom ou ID...">
+        </div>
+
+        <div id="members-list" class="members-list">
+            <div class="empty-state">Chargement des membres...</div>
+        </div>
+    </main>
+
+    <!-- =========================================================================
+         RUBRIQUE 6 (HTML) : FENÊTRE MODALE DE DÉTAIL DU MEMBRE
+         ========================================================================= -->
+    <div id="member-modal" class="modal-backdrop" onclick="if(event.target === this) fermerModal()">
+        <div class="modal-card">
+            <!-- Photo du membre affichée dans la fenêtre modale -->
+            <img id="modal-member-photo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Photo du membre" class="modal-photo">
+            <h2 id="modal-name" class="modal-name">Nom du membre</h2>
+            <div id="modal-id" class="modal-id">ASTER-JMEMBRES2026-000</div>
+            <div id="modal-titre" class="modal-titre">Titre</div>
+
             <div class="modal-details">
-                <p>📧 Email : <span id="modal-email" style="font-size: 13px; font-weight: 500; color: #0284c7;">--</span></p>
-                <p>📥 Arrivée : <span id="modal-in">--:--</span></p>
-                <p>📤 Départ : <span id="modal-out">--:--</span></p>
-                <p>📌 Statut : <span id="modal-status">--</span></p>
+                <div class="modal-row">
+                    <span class="modal-label">📧 Email :</span>
+                    <span id="modal-email" class="modal-value">--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📥 Arrivée :</span>
+                    <span id="modal-arrivee" class="modal-value">--:--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📤 Départ :</span>
+                    <span id="modal-depart" class="modal-value">--:--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📌 Statut :</span>
+                    <span id="modal-statut" class="modal-value">--</span>
+                </div>
             </div>
-            
-            <button class="btn-close" onclick="closeModal()">Fermer</button>
+
+            <button type="button" class="modal-close-btn" onclick="fermerModal()">Fermer</button>
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- 3. LE BLOC DE SCRIPTS JAVASCRIPT                         -->
-    <!-- ======================================================== -->
     <script>
-        /* A. Initialisation et configuration globale */
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+        /* =====================================================================
+           RUBRIQUE 7 (JS) : CONFIGURATION ET ÉTAT GLOBAL
+           ===================================================================== */
+        // Logo ASTER conservé en haut de la page Admin et utilisé en repli si pas de photo
+        const LOGO_ASTER_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
+
+        // ⚠️ REMPLACEZ PAR L'URL DE DÉPLOIEMENT (/exec) DE VOTRE SCRIPT GOOGLE APPS SCRIPT
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+
         let allMembers = [];
 
-        /* B. Récupération des données (JSONP) : fetchMembers() */
-        function fetchMembers() {
-            const callbackName = "handleResponse_" + Math.floor(Math.random() * 100000);
-            
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                const oldScript = document.getElementById('jsonp-script');
-                if (oldScript) oldScript.remove();
+        /* =====================================================================
+           RUBRIQUE 8 (JS) : CONVERSION SÉCURISÉE DES LIENS GOOGLE DRIVE
+           ===================================================================== */
+        /**
+         * Garantit qu'un lien Google Drive (même non pré-converti) devient un lien image
+         * affichable (https://lh3.googleusercontent.com/d/ID). Si vide, renvoie LOGO_ASTER_URL.
+         */
+        function resoudrePhotoUrl(url) {
+            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
+            const propre = url.trim();
+            if (!propre) return LOGO_ASTER_URL;
 
-                if (data && data.success && data.members) {
-                    allMembers = data.members;
-                    updateStats();
-                    filterMembers();
-                } else {
-                    document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:#94a3b8; padding: 15px;">Aucun membre trouvé.</p>`;
-                }
-            };
+            // Déjà au format lh3.googleusercontent.com/d/...
+            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
 
-            const oldScript = document.getElementById('jsonp-script');
+            // Format /file/d/ID/view ou /d/ID/
+            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (matchSlash && matchSlash[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
+            }
+
+            // Format ?id=ID ou &id=ID
+            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (matchQuery && matchQuery[1]) {
+                return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
+            }
+
+            return propre;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 9 (JS) : CHARGEMENT DES MEMBRES VIA JSONP
+           ===================================================================== */
+        function chargerMembres() {
+            const oldScript = document.getElementById("jsonp-members-script");
             if (oldScript) oldScript.remove();
 
-            const script = document.createElement('script');
-            script.id = 'jsonp-script';
-            script.src = `${SCRIPT_URL}?action=getMembers&_=${new Date().getTime()}&callback=${callbackName}`;
-            
-            script.onerror = function() {
-                delete window[callbackName];
-                script.remove();
-                document.getElementById("member-list").innerHTML = `<p style="text-align:center; color:red; padding: 15px;">Échec du chargement.</p>`;
+            const script = document.createElement("script");
+            script.id = "jsonp-members-script";
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("members-list").innerHTML =
+                    `<div class="empty-state">Erreur de chargement des données.</div>`;
             };
-
-            document.head.appendChild(script);
+            document.body.appendChild(script);
         }
 
-        /* C. Calcul des statistiques : updateStats() */
-        function updateStats() {
-            let inCount = 0;
-            let outCount = 0;
-
-            allMembers.forEach(m => {
-                let st = (m.statut || "").toString().trim();
-                if (st === "Présent") inCount++;
-                if (st === "Sorti") outCount++;
-            });
-
-            document.getElementById("count-in").innerText = inCount;
-            document.getElementById("count-out").innerText = outCount;
-            document.getElementById("count-inscrits").innerText = allMembers.length;
+        function traiterDonneesMembres(response) {
+            if (response && response.success && Array.isArray(response.members)) {
+                allMembers = response.members;
+                mettreAJourCompteurs(allMembers);
+                appliquerFiltre();
+            }
         }
 
-        /* D. Affichage de la liste : renderList(members) */
-        function renderList(members) {
-            const container = document.getElementById("member-list");
-            if (members.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 15px;">Aucun résultat</p>`;
+        /* =====================================================================
+           RUBRIQUE 10 (JS) : FORMATAGE HEURE ET COMPTEURS
+           ===================================================================== */
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
+        }
+
+        function mettreAJourCompteurs(membres) {
+            const inCount = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const outCount = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const totalCount = membres.length;
+
+            document.getElementById("count-in").textContent = inCount;
+            document.getElementById("count-out").textContent = outCount;
+            document.getElementById("count-total").textContent = totalCount;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 11 (JS) : AFFICHAGE LISTE ET FILTRE DE RECHERCHE
+           ===================================================================== */
+        function afficherMembres(membres) {
+            const container = document.getElementById("members-list");
+            container.innerHTML = "";
+
+            if (!membres || membres.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun membre trouvé.</div>`;
                 return;
             }
 
-            container.innerHTML = members.map(m => {
-                let nom = m.nom || "Membre";
-                let id = m.id || "";
-                
-                let photo = (m.photoUrl && m.photoUrl.startsWith("http")) ? m.photoUrl : 'logo.png';
-                
-                let st = (m.statut || "Inscrit").toString().trim();
-                
-                let badgeClass = "inscrit";
-                if (st === "Présent") badgeClass = "present";
-                if (st === "Sorti") badgeClass = "sorti";
+            membres.forEach(m => {
+                const statut = (m.statut || "Inscrit").trim();
+                let badgeClass = "status-inscrit";
+                if (statut === "Présent") badgeClass = "status-present";
+                else if (statut === "Sorti") badgeClass = "status-sorti";
 
-                let heureAffichee = m.heure || "";
-                let heureColor = (st === "Sorti") ? "#991b1b" : "#065f46"; 
-                if (st !== "Présent" && st !== "Sorti") {
-                    heureColor = "#64748b";
-                }
+                const photoSrc = resoudrePhotoUrl(m.photo);
 
-                let heureDisplay = heureAffichee ? `<span class="heure-text" style="color: ${heureColor}; font-weight: bold;">${heureAffichee}</span>` : ``;
+                const rawTime = statut === "Sorti"
+                    ? (m.depart && m.depart !== "--:--" ? m.depart : m.heure)
+                    : (m.arrivee && m.arrivee !== "--:--" ? m.arrivee : m.heure);
+                const heureAffichee = formaterHeureCourte(rawTime);
 
-                return `
-                    <div class="member-item" onclick="openModal('${m.id}')">
-                        <div class="member-left">
-                            <img src="${photo}" class="member-photo" alt="Photo" onerror="this.src='logo.png'">
-                            <div class="member-details">
-                                <div class="member-name">${nom}</div>
-                                <div class="member-id">${id}</div>
-                            </div>
-                        </div>
-                        <div class="member-right">
-                            <span class="status-badge ${badgeClass}">${st}</span>
-                            ${heureDisplay}
+                const row = document.createElement("div");
+                row.className = "member-row";
+                row.onclick = () => ouvrirModal(m);
+
+                row.innerHTML = `
+                    <div class="member-left">
+                        <img src="${photoSrc}" alt="${m.nom || "Membre"}"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             class="member-avatar">
+                        <div class="member-info">
+                            <div class="member-name">${m.nom || ""}</div>
+                            <div class="member-id">${m.id || ""}</div>
                         </div>
                     </div>
+                    <div class="member-right">
+                        <span class="status-badge ${badgeClass}">${statut}</span>
+                        ${heureAffichee ? `<span class="member-time">${heureAffichee}</span>` : ""}
+                    </div>
                 `;
-            }).join('');
-        }
 
-        /* E. Gestion de la modale : openModal(memberId) et closeModal() */
-        function openModal(memberId) {
-            const m = allMembers.find(item => item.id === memberId);
-            if (!m) return;
-
-            document.getElementById('modal-photo').src = (m.photoUrl && m.photoUrl.startsWith('http')) ? m.photoUrl : 'logo.png';
-            document.getElementById('modal-name').innerText = m.nom || "Membre";
-            document.getElementById('modal-id').innerText = m.id || "";
-            document.getElementById('modal-titre').innerText = m.titre || "";
-            document.getElementById('modal-email').innerText = m.email || "Non renseigné";
-            
-            document.getElementById('modal-in').innerText = m.arrivee || "--:--";
-            document.getElementById('modal-out').innerText = m.depart || "--:--";
-            document.getElementById('modal-status').innerText = m.statut || "Inscrit";
-
-            document.getElementById('modal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        /* F. Filtrage par recherche : filterMembers() */
-        function filterMembers() {
-            const query = document.getElementById("search-input").value.toLowerCase().trim();
-            const filtered = allMembers.filter(m => {
-                let nom = (m.nom || "").toLowerCase();
-                let id = (m.id || "").toLowerCase();
-                return nom.includes(query) || id.includes(query);
+                container.appendChild(row);
             });
-            renderList(filtered);
         }
 
-        /* G. Automatisation périodique (lancement initial et intervalle de rafraîchissement) */
-        fetchMembers();
-        setInterval(fetchMembers, 5000);
+        function appliquerFiltre() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            if (!query) {
+                afficherMembres(allMembers);
+                return;
+            }
+            const filtered = allMembers.filter(m =>
+                (m.nom && m.nom.toLowerCase().includes(query)) ||
+                (m.id && m.id.toLowerCase().includes(query))
+            );
+            afficherMembres(filtered);
+        }
+
+        document.getElementById("search-input").addEventListener("input", appliquerFiltre);
+
+        /* =====================================================================
+           RUBRIQUE 12 (JS) : OUVERTURE ET FERMETURE DE LA MODALE MEMBRE
+           ===================================================================== */
+        /**
+         * Affiche la photo du membre dans #modal-member-photo (tout en conservant
+         * le logo ASTER dans #header-logo en haut de la page Admin).
+         */
+        function ouvrirModal(m) {
+            const imgModal = document.getElementById("modal-member-photo");
+            const urlPhotoMembre = resoudrePhotoUrl(m ? m.photo : "");
+
+            imgModal.onerror = function () {
+                this.onerror = null;
+                this.src = LOGO_ASTER_URL;
+            };
+            imgModal.src = urlPhotoMembre;
+
+            document.getElementById("modal-name").textContent = (m && m.nom) ? m.nom : "Nom inconnu";
+            document.getElementById("modal-id").textContent = (m && m.id) ? m.id : "";
+            document.getElementById("modal-titre").textContent = (m && m.titre) ? m.titre : "Membre ASTER";
+            document.getElementById("modal-email").textContent = (m && m.email) ? m.email : "Non renseigné";
+            document.getElementById("modal-arrivee").textContent = (m && m.arrivee) ? m.arrivee : "--:--";
+            document.getElementById("modal-depart").textContent = (m && m.depart) ? m.depart : "--:--";
+            document.getElementById("modal-statut").textContent = (m && m.statut) ? m.statut : "Inscrit";
+
+            document.getElementById("member-modal").classList.add("active");
+        }
+
+        function fermerModal() {
+            document.getElementById("member-modal").classList.remove("active");
+        }
+
+        /* =====================================================================
+           RUBRIQUE 13 (JS) : DÉMARRAGE ET ACTUALISATION AUTOMATIQUE
+           ===================================================================== */
+        window.onload = () => {
+            chargerMembres();
+            setInterval(chargerMembres, 10000);
+        };
     </script>
 </body>
 </html>
