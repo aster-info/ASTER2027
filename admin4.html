@@ -210,7 +210,7 @@
             margin-left: 12px;
         }
 
-        /* Badges de statut : Inscrit en bleu, Présent en vert, Sorti en rouge */
+        /* Badges de statut (Inscrit en bleu, Sorti en rouge doux, Présent en vert doux) */
         .status-badge {
             font-size: 12px;
             font-weight: 700;
@@ -223,7 +223,7 @@
         .status-sorti { background-color: #fee2e2; color: #b91c1c; }
         .status-inscrit { background-color: #e0f2fe; color: #0369a1; }
 
-        /* Couleur de l'heure liée au statut : vert si Présent, rouge si Sorti */
+        /* Couleur de l'heure selon le statut : vert si Présent, rouge si Sorti */
         .member-time {
             font-size: 13px;
             font-weight: 700;
@@ -271,12 +271,13 @@
             text-align: center;
         }
 
+        /* Photo ronde dédiée au membre dans la fenêtre modale */
         .modal-photo {
             width: 118px;
             height: 118px;
             border-radius: 50%;
             object-fit: cover;
-            object-position: center top;
+            object-position: center top; /* Centre bien le visage/haut de la photo */
             border: 4px solid #e0f2fe;
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
             margin-bottom: 14px;
@@ -393,6 +394,7 @@
          ========================================================================= -->
     <div id="member-modal" class="modal-backdrop" onclick="if(event.target === this) fermerModal()">
         <div class="modal-card">
+            <!-- Photo du membre affichée dans la fenêtre modale -->
             <img id="modal-member-photo" src="./logo.png" alt="Photo du membre" class="modal-photo">
             <h2 id="modal-name" class="modal-name">Nom du membre</h2>
             <div id="modal-id" class="modal-id">ASTER-JMEMBRES2026-000</div>
@@ -469,46 +471,4 @@
            RUBRIQUE 9 (JS) : CHARGEMENT DES MEMBRES VIA JSONP
            ===================================================================== */
         function chargerMembres() {
-            const oldScript = document.getElementById("jsonp-members-script");
-            if (oldScript) oldScript.remove();
-
-            const script = document.createElement("script");
-            script.id = "jsonp-members-script";
-            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres&_t=${Date.now()}`;
-            script.onerror = () => {
-                document.getElementById("members-list").innerHTML =
-                    `<div class="empty-state">Erreur de chargement des données.</div>`;
-            };
-            document.body.appendChild(script);
-        }
-
-        function traiterDonneesMembres(response) {
-            if (response && response.success && Array.isArray(response.members)) {
-                allMembers = response.members;
-                mettreAJourCompteurs(allMembers);
-                appliquerFiltre();
-            }
-        }
-
-        /* =====================================================================
-           RUBRIQUE 10 (JS) : FORMATAGE HEURE ET COMPTEURS
-           ===================================================================== */
-        function formaterHeureCourte(valeurHeure) {
-            if (!valeurHeure || valeurHeure === "--:--") return "";
-            const str = String(valeurHeure).trim();
-            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
-            return matchTime ? matchTime[1] : str;
-        }
-
-        function mettreAJourCompteurs(membres) {
-            const inCount = membres.filter(m => (m.statut || "").trim() === "Présent").length;
-            const outCount = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
-            const totalCount = membres.length;
-
-            document.getElementById("count-in").textContent = inCount;
-            document.getElementById("count-out").textContent = outCount;
-            document.getElementById("count-total").textContent = totalCount;
-        }
-
-        /* =====================================================================
-           RUBRIQUE 11 (JS) : AFFICHAGE LISTE ET FILTRE DE RECHERCHE
+            const oldScript = document.getElementById("
