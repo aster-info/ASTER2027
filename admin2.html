@@ -170,6 +170,7 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
+            object-position: center top;
             flex-shrink: 0;
             background: #ffffff;
             border: 2px solid #e2e8f0;
@@ -271,7 +272,7 @@
             height: 118px;
             border-radius: 50%;
             object-fit: cover;
-            object-position: center top; /* Centre bien le visage/haut de la photo */
+            object-position: center top;
             border: 4px solid #e0f2fe;
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
             margin-bottom: 14px;
@@ -345,10 +346,13 @@
 <body>
 
     <!-- =========================================================================
-         RUBRIQUE 3 (HTML) : EN-TÊTE ADMIN AVEC LOGO ASTER
+         RUBRIQUE 3 (HTML) : EN-TÊTE ADMIN AVEC LOGO ASTER (RACINE DU SITE)
          ========================================================================= -->
     <header class="header">
-        <img id="header-logo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Logo ASTER" class="header-logo">
+        <!-- Remplacez "./logo.png" par le nom exact de votre image à la racine du site si différent -->
+        <img id="header-logo" src="./logo.png"
+             onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp';"
+             alt="Logo ASTER" class="header-logo">
         <h1 class="header-title">Administration</h1>
     </header>
 
@@ -389,7 +393,7 @@
     <div id="member-modal" class="modal-backdrop" onclick="if(event.target === this) fermerModal()">
         <div class="modal-card">
             <!-- Photo du membre affichée dans la fenêtre modale -->
-            <img id="modal-member-photo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Photo du membre" class="modal-photo">
+            <img id="modal-member-photo" src="./logo.png" alt="Photo du membre" class="modal-photo">
             <h2 id="modal-name" class="modal-name">Nom du membre</h2>
             <div id="modal-id" class="modal-id">ASTER-JMEMBRES2026-000</div>
             <div id="modal-titre" class="modal-titre">Titre</div>
@@ -421,10 +425,11 @@
         /* =====================================================================
            RUBRIQUE 7 (JS) : CONFIGURATION ET ÉTAT GLOBAL
            ===================================================================== */
-        // Logo ASTER conservé en haut de la page Admin et utilisé en repli si pas de photo
-        const LOGO_ASTER_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
+        // Logo ASTER de repli si un membre n'a pas de photo ou si ./logo.png est introuvable
+        const LOGO_ASTER_URL = "./logo.png";
+        const LOGO_FALLBACK_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
 
-        // ⚠️ REMPLACEZ PAR L'URL DE DÉPLOIEMENT (/exec) DE VOTRE SCRIPT GOOGLE APPS SCRIPT
+        // URL de déploiement (/exec) du script Google Apps Script
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
 
         let allMembers = [];
@@ -432,25 +437,18 @@
         /* =====================================================================
            RUBRIQUE 8 (JS) : CONVERSION SÉCURISÉE DES LIENS GOOGLE DRIVE
            ===================================================================== */
-        /**
-         * Garantit qu'un lien Google Drive (même non pré-converti) devient un lien image
-         * affichable (https://lh3.googleusercontent.com/d/ID). Si vide, renvoie LOGO_ASTER_URL.
-         */
         function resoudrePhotoUrl(url) {
             if (!url || typeof url !== "string") return LOGO_ASTER_URL;
             const propre = url.trim();
             if (!propre) return LOGO_ASTER_URL;
 
-            // Déjà au format lh3.googleusercontent.com/d/...
             if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
 
-            // Format /file/d/ID/view ou /d/ID/
             const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (matchSlash && matchSlash[1]) {
                 return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
             }
 
-            // Format ?id=ID ou &id=ID
             const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
             if (matchQuery && matchQuery[1]) {
                 return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
@@ -536,7 +534,7 @@
                 row.innerHTML = `
                     <div class="member-left">
                         <img src="${photoSrc}" alt="${m.nom || "Membre"}"
-                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             onerror="this.onerror=null;this.src='${LOGO_FALLBACK_URL}';"
                              class="member-avatar">
                         <div class="member-info">
                             <div class="member-name">${m.nom || ""}</div>
@@ -571,17 +569,13 @@
         /* =====================================================================
            RUBRIQUE 12 (JS) : OUVERTURE ET FERMETURE DE LA MODALE MEMBRE
            ===================================================================== */
-        /**
-         * Affiche la photo du membre dans #modal-member-photo (tout en conservant
-         * le logo ASTER dans #header-logo en haut de la page Admin).
-         */
         function ouvrirModal(m) {
             const imgModal = document.getElementById("modal-member-photo");
             const urlPhotoMembre = resoudrePhotoUrl(m ? m.photo : "");
 
             imgModal.onerror = function () {
                 this.onerror = null;
-                this.src = LOGO_ASTER_URL;
+                this.src = LOGO_FALLBACK_URL;
             };
             imgModal.src = urlPhotoMembre;
 
