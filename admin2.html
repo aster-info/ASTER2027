@@ -1,27 +1,222 @@
-/* =====================================================================
-           RUBRIQUE 8 (JS) : CONVERSION SÉCURISÉE DES LIENS GOOGLE DRIVE
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- =====================================================================
+         RUBRIQUE 1 : MÉTADONNÉES ET TITRE DE LA PAGE
+         ===================================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - ASTER</title>
+
+    <style>
+        /* =====================================================================
+           RUBRIQUE 2 : STYLES GÉNÉRAUX ET MISE EN PAGE
            ===================================================================== */
-        function resoudrePhotoUrl(url) {
-            if (!url || typeof url !== "string") return LOGO_FALLBACK_URL;
-            const propre = url.trim();
-            const lower = propre.toLowerCase();
-
-            // Si la cellule est vide ou indique "attente" / "en attente", on attribue le logo ASTER
-            if (!propre || lower === "attente" || lower === "en attente") {
-                return LOGO_FALLBACK_URL;
-            }
-
-            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
-
-            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (matchSlash && matchSlash[1]) {
-                return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
-            }
-
-            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (matchQuery && matchQuery[1]) {
-                return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
-            }
-
-            return propre;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 16px 48px;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 3 : EN-TÊTE ADMIN (LOGO ASTER CONSERVÉ EN HAUT)
+           ===================================================================== */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .header-logo {
+            width: 148px;
+            height: 148px;
+            object-fit: contain;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
+        }
+
+        .header-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f2942;
+            letter-spacing: -0.02em;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 4 : BARRE DES COMPTEURS (In / Out / Inscrits)
+           ===================================================================== */
+        .counters-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .counter-pill {
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            border: 1px solid #eef2f6;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f2942;
+        }
+
+        .badge-count {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            line-height: 1.2;
+        }
+
+        .badge-in { background-color: #10b981; }
+        .badge-out { background-color: #ef4444; }
+        .badge-total { background-color: #29b6f6; }
+
+        /* =====================================================================
+           RUBRIQUE 5 : CARTE PRINCIPALE, RECHERCHE ET LISTE DES MEMBRES
+           ===================================================================== */
+        .main-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 680px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+            border: 1px solid #eef2f6;
+        }
+
+        .search-box {
+            margin-bottom: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 13px 16px;
+            font-size: 15px;
+            color: #334155;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-input::placeholder { color: #94a3b8; }
+        .search-input:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+        }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 430px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .members-list::-webkit-scrollbar { width: 8px; }
+        .members-list::-webkit-scrollbar-track { background: #f8fafc; border-radius: 8px; }
+        .members-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+
+        .member-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background-color 0.15s, transform 0.15s, border-color 0.15s;
+        }
+
+        .member-row:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .member-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            flex-shrink: 0;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+        }
+
+        .member-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .member-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-id {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .member-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 8px;
+            line-height: 1.2;
+        }
+
+        .status-present { background-color: #dcfce7; color: #15803d; }
+        .status-sorti { background-color: #
