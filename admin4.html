@@ -210,7 +210,7 @@
             margin-left: 12px;
         }
 
-        /* Badges de statut (Inscrit en bleu, Sorti en rouge doux, Présent en vert doux) */
+        /* Badges de statut : Inscrit en bleu, Présent en vert, Sorti en rouge */
         .status-badge {
             font-size: 12px;
             font-weight: 700;
@@ -271,13 +271,12 @@
             text-align: center;
         }
 
-        /* Photo ronde dédiée au membre dans la fenêtre modale */
         .modal-photo {
             width: 118px;
             height: 118px;
             border-radius: 50%;
             object-fit: cover;
-            object-position: center top; /* Centre bien le visage/haut de la photo */
+            object-position: center top;
             border: 4px solid #e0f2fe;
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
             margin-bottom: 14px;
@@ -394,7 +393,6 @@
          ========================================================================= -->
     <div id="member-modal" class="modal-backdrop" onclick="if(event.target === this) fermerModal()">
         <div class="modal-card">
-            <!-- Photo du membre affichée dans la fenêtre modale -->
             <img id="modal-member-photo" src="./logo.png" alt="Photo du membre" class="modal-photo">
             <h2 id="modal-name" class="modal-name">Nom du membre</h2>
             <div id="modal-id" class="modal-id">ASTER-JMEMBRES2026-000</div>
@@ -471,4 +469,153 @@
            RUBRIQUE 9 (JS) : CHARGEMENT DES MEMBRES VIA JSONP
            ===================================================================== */
         function chargerMembres() {
-            const oldScript = document.getElementById("
+            const oldScript = document.getElementById("jsonp-members-script");
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement("script");
+            script.id = "jsonp-members-script";
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("members-list").innerHTML =
+                    `<div class="empty-state">Erreur de chargement des données.</div>`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function traiterDonneesMembres(response) {
+            if (response && response.success && Array.isArray(response.members)) {
+                allMembers = response.members;
+                mettreAJourCompteurs(allMembers);
+                appliquerFiltre();
+            }
+        }
+
+        /* =====================================================================
+           RUBRIQUE 10 (JS) : FORMATAGE HEURE ET COMPTEURS
+           ===================================================================== */
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
+        }
+
+        function mettreAJourCompteurs(membres) {
+            const inCount = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const outCount = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const totalCount = membres.length;
+
+            document.getElementById("count-in").textContent = inCount;
+            document.getElementById("count-out").textContent = outCount;
+            document.getElementById("count-total").textContent = totalCount;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 11 (JS) : AFFICHAGE LISTE ET FILTRE DE RECHERCHE
+           ===================================================================== */
+        function afficherMembres(membres) {
+            const container = document.getElementById("members-list");
+            container.innerHTML = "";
+
+            if (!membres || membres.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun membre trouvé.</div>`;
+                return;
+            }
+
+            membres.forEach(m => {
+                const statut = (m.statut || "Inscrit").trim();
+                let badgeClass = "status-inscrit";
+                let timeClass = "time-default";
+
+                if (statut === "Présent") {
+                    badgeClass = "status-present";
+                    timeClass = "time-present";
+                } else if (statut === "Sorti") {
+                    badgeClass = "status-sorti";
+                    timeClass = "time-sorti";
+                }
+
+                const photoSrc = resoudrePhotoUrl(m.photo);
+
+                const rawTime = statut === "Sorti"
+                    ? (m.depart && m.depart !== "--:--" ? m.depart : m.heure)
+                    : (m.arrivee && m.arrivee !== "--:--" ? m.arrivee : m.heure);
+                const heureAffichee = formaterHeureCourte(rawTime);
+
+                const row = document.createElement("div");
+                row.className = "member-row";
+                row.onclick = () => ouvrirModal(m);
+
+                row.innerHTML = `
+                    <div class="member-left">
+                        <img src="${photoSrc}" alt="${m.nom || "Membre"}"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             class="member-avatar">
+                        <div class="member-info">
+                            <div class="member-name">${m.nom || ""}</div>
+                            <div class="member-id">${m.id || ""}</div>
+                        </div>
+                    </div>
+                    <div class="member-right">
+                        <span class="status-badge ${badgeClass}">${statut}</span>
+                        ${heureAffichee ? `<span class="member-time ${timeClass}">${heureAffichee}</span>` : ""}
+                    </div>
+                `;
+
+                container.appendChild(row);
+            });
+        }
+
+        function appliquerFiltre() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            if (!query) {
+                afficherMembres(allMembers);
+                return;
+            }
+            const filtered = allMembers.filter(m =>
+                (m.nom && m.nom.toLowerCase().includes(query)) ||
+                (m.id && m.id.toLowerCase().includes(query))
+            );
+            afficherMembres(filtered);
+        }
+
+        document.getElementById("search-input").addEventListener("input", appliquerFiltre);
+
+        /* =====================================================================
+           RUBRIQUE 12 (JS) : OUVERTURE ET FERMETURE DE LA MODALE MEMBRE
+           ===================================================================== */
+        function ouvrirModal(m) {
+            const imgModal = document.getElementById("modal-member-photo");
+            const urlPhotoMembre = resoudrePhotoUrl(m ? m.photo : "");
+
+            imgModal.onerror = function () {
+                this.onerror = null;
+                this.src = LOGO_ASTER_URL;
+            };
+            imgModal.src = urlPhotoMembre;
+
+            document.getElementById("modal-name").textContent = (m && m.nom) ? m.nom : "Nom inconnu";
+            document.getElementById("modal-id").textContent = (m && m.id) ? m.id : "";
+            document.getElementById("modal-titre").textContent = (m && m.titre) ? m.titre : "Membre ASTER";
+            document.getElementById("modal-email").textContent = (m && m.email) ? m.email : "Non renseigné";
+            document.getElementById("modal-arrivee").textContent = (m && m.arrivee) ? m.arrivee : "--:--";
+            document.getElementById("modal-depart").textContent = (m && m.depart) ? m.depart : "--:--";
+            document.getElementById("modal-statut").textContent = (m && m.statut) ? m.statut : "Inscrit";
+
+            document.getElementById("member-modal").classList.add("active");
+        }
+
+        function fermerModal() {
+            document.getElementById("member-modal").classList.remove("active");
+        }
+
+        /* =====================================================================
+           RUBRIQUE 13 (JS) : DÉMARRAGE ET ACTUALISATION AUTOMATIQUE
+           ===================================================================== */
+        window.onload = () => {
+            chargerMembres();
+            setInterval(chargerMembres, 10000);
+        };
+    </script>
+</body>
+</html>
