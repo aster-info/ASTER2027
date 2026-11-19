@@ -1009,4 +1009,456 @@
             const map = new Map();
             items.forEach(item => {
                 const raw = extractFn(item);
-                const label = (raw && String(raw).trim()) ? String(raw).trim() : fallback
+                const label = (raw && String(raw).trim()) ? String(raw).trim() : fallbackLabel;
+                map.set(label, (map.get(label) || 0) + 1);
+            });
+            return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+        }
+
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 10 (JS) : CHARGEMENT JSONP DEPUIS GOOGLE APPS SCRIPT
+           ===================================================================== */
+        function chargerDonnees() {
+            const oldScript = document.getElementById("jsonp-dashboard-script");
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement("script");
+            script.id = "jsonp-dashboard-script";
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesDashboard&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("last-update").textContent = "Erreur de connexion";
+                document.getElementById("dashboard-table-body").innerHTML =
+                    `<tr><td colspan="5" class="empty-msg">Impossible de charger les données depuis le serveur.</td></tr>`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function traiterDonneesDashboard(response) {
+            if (!response || !response.success || !Array.isArray(response.members)) return;
+
+            allMembers = response.members;
+            const now = new Date();
+            document.getElementById("last-update").textContent =
+                "MAJ " + now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+            mettreAJourKPIs(allMembers);
+            mettreAJourGraphiques(allMembers);
+            afficherInstitutions(allMembers);
+            appliquerFiltresTableau();
+        }
+
+        /* =====================================================================
+           RUBRIQUE 11 (JS) : MISE À JOUR DES KPI ET GRAPHIQUES CHART.JS
+           ===================================================================== */
+        function mettreAJourKPIs(membres) {
+            const total = membres.length;
+            const nbPresent = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const nbSorti = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const nbInscrit = membres.filter(m => {
+                const s = (m.statut || "Inscrit").trim();
+                return s !== "Présent" && s !== "Sorti";
+            }).length;
+
+            const pctPresent = total > 0 ? Math.round((nbPresent / total) * 100) : 0;
+            const pctSorti = total > 0 ? Math.round((nbSorti / total) * 100) : 0;
+
+            const regimes = compterCategories(membres, m => m.regime, "Aucun");
+            const institutions = compterCategories(membres, m => m.institution, "Non précisée");
+
+            document.getElementById("kpi-present").textContent = nbPresent;
+            document.getElementById("kpi-present-pct").textContent = `${pctPresent} % des inscrits`;
+            document.getElementById("kpi-sorti").textContent = nbSorti;
+            document.getElementById("kpi-sorti-pct").textContent = `${pctSorti} % des inscrits`;
+            document.getElementById("kpi-inscrit").textContent = nbInscrit;
+            document.getElementById("kpi-total").textContent = total;
+            document.getElementById("kpi-inst-count").textContent =
+                `${institutions.length} institution(s) • ${regimes.length} régime(s)`;
+        }
+
+        function creerOuMajChart(key, canvasId, config) {
+            if (charts[key]) {
+                charts[key].data = config.data;
+                charts[key].options = config.options;
+                charts[key].update();
+                return;
+            }
+            const ctx = document.getElementById(canvasId).getContext("2d");
+            charts[key] = new Chart(ctx, config);
+        }
+
+        function mettreAJourGraphiques(membres) {
+            const dark = estModeSombre();
+            const tickColor = dark ? "#cbd5e1" : "#334155";
+            const gridColor = dark ? "#334155" : "#f1f5f9";
+            const sliceBorder = dark ? "#1e293b" : "#ffffff";
+
+            const nbPresent = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const nbSorti = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const nbInscrit = membres.filter(m => {
+                const s = (m.statut || "Inscrit").trim();
+                return s !== "Présent" && s !== "Sorti";
+            }).length;
+
+            creerOuMajChart("statuts", "chartStatuts", {
+                type: "doughnut",
+                data: {
+                    labels: ["Présents", "Sortis", "Inscrits"],
+                    datasets: [{
+                        data: [nbPresent, nbSorti, nbInscrit],
+                        backgroundColor: ["#10b981", "#ef4444", "#29b6f6"],
+                        borderWidth: 3,
+                        borderColor: sliceBorder,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "62%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: { padding: 16, font: { weight: "600" }, color: tickColor }
+                        }
+                    }
+                }
+            });
+
+            const regimeEntries = compterCategories(membres, m => m.regime, "Aucun / Standard");
+            creerOuMajChart("regimes", "chartRegimes", {
+                type: "bar",
+                data: {
+                    labels: regimeEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Participants",
+                        data: regimeEntries.map(e => e[1]),
+                        backgroundColor: regimeEntries.map((_, idx) => PALETTE[idx % PALETTE.length]),
+                        borderRadius: 8,
+                        maxBarThickness: 34
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: tickColor },
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { weight: "600" }, color: tickColor }
+                        }
+                    }
+                }
+            });
+
+            const titreEntries = compterCategories(membres, m => m.titre, "Non précisé");
+            creerOuMajChart("titres", "chartTitres", {
+                type: "bar",
+                data: {
+                    labels: titreEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Membres",
+                        data: titreEntries.map(e => e[1]),
+                        backgroundColor: titreEntries.map((_, idx) => PALETTE[(idx + 2) % PALETTE.length]),
+                        borderRadius: 8,
+                        maxBarThickness: 42
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: tickColor },
+                            grid: { color: gridColor }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { weight: "600" }, color: tickColor }
+                        }
+                    }
+                }
+            });
+
+            const instEntries = compterCategories(membres, m => m.institution, "Non précisée").slice(0, 8);
+            creerOuMajChart("institutions", "chartInstitutions", {
+                type: "bar",
+                data: {
+                    labels: instEntries.map(e => e[0]),
+                    datasets: [{
+                        label: "Inscrits",
+                        data: instEntries.map(e => e[1]),
+                        backgroundColor: "#0284c7",
+                        borderRadius: 8,
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: tickColor },
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { weight: "600" }, color: tickColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* =====================================================================
+           RUBRIQUE 12 (JS) : FENÊTRE MODALE (4 ONGLETS KPI & PARTICIPANT)
+           ===================================================================== */
+        function rendreCarteMembreModale(m) {
+            const statut = (m.statut || "Inscrit").trim();
+            let badgeClass = "status-inscrit";
+            let timeColor = "var(--blue-text)";
+            if (statut === "Présent") {
+                badgeClass = "status-present";
+                timeColor = "var(--green-text)";
+            } else if (statut === "Sorti") {
+                badgeClass = "status-sorti";
+                timeColor = "var(--red-text)";
+            }
+
+            const photo = resoudrePhotoUrl(m.photo);
+            const titre = (m.titre && m.titre.trim()) ? m.titre.trim() : "Non précisé";
+            const inst = (m.institution && m.institution.trim()) ? m.institution.trim() : "Non précisée";
+            const email = (m.email && m.email.trim()) ? m.email.trim() : "Non renseigné";
+            const regime = (m.regime && m.regime.trim()) ? m.regime.trim() : "Aucun";
+            const rawTime = statut === "Sorti"
+                ? (m.depart && m.depart !== "--:--" ? m.depart : m.heure)
+                : (m.arrivee && m.arrivee !== "--:--" ? m.arrivee : m.heure);
+            const heureCourte = formaterHeureCourte(rawTime);
+
+            const arriveeTxt = (m.arrivee && m.arrivee !== "--:--") ? m.arrivee : "--:--";
+            const departTxt = (m.depart && m.depart !== "--:--") ? m.depart : "--:--";
+
+            const statutEmailVal = String(m.statutEmail || "").trim();
+            const emailEnvoye = /^envoy/i.test(statutEmailVal);
+            const badgeEmailHtml = emailEnvoye
+                ? `<div class="email-sent-badge" title="${statutEmailVal.replace(/"/g, "&quot;")}">✉️ Email de confirmation envoyé</div>`
+                : `<div class="email-pending-badge" title="Colonne O vide">✉️ Email confirmation à envoyer</div>`;
+
+            return `
+                <div class="modal-member-item">
+                    <div class="modal-member-left">
+                        <img src="${photo}" alt="${m.nom || "Membre"}"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             class="modal-member-avatar">
+                        <div>
+                            <div class="modal-member-name">
+                                ${m.nom || ""}
+                                <span style="color:var(--muted);font-weight:600;font-size:12px;">(${m.id || ""})</span>
+                            </div>
+                            <div class="modal-member-lines">
+                                <div><span class="modal-field-label">🏅 Titre :</span> <strong>${titre}</strong></div>
+                                <div><span class="modal-field-label">🏥 Institution :</span> <strong>${inst}</strong></div>
+                                <div><span class="modal-field-label">📧 E-mail :</span> <strong>${email}</strong></div>
+                                <div><span class="modal-field-label">🍽️ Régime :</span> <strong>${regime}</strong></div>
+                                <div><span class="modal-field-label">🕒 Arrivée / Départ :</span> <strong>${arriveeTxt}</strong> / <strong>${departTxt}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-member-right">
+                        <div class="modal-member-top-status">
+                            <span class="status-badge ${badgeClass}">${statut}</span>
+                            ${heureCourte ? `<div class="modal-member-time" style="color:${timeColor};">${heureCourte}</div>` : ""}
+                        </div>
+                        ${badgeEmailHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function ouvrirModaleKPI(categorie) {
+            let liste = [];
+            let titreModal = "";
+            let badgeBg = "var(--blue-soft)";
+            let badgeColor = "var(--blue-text)";
+
+            if (categorie === "Présent") {
+                liste = allMembers.filter(m => (m.statut || "").trim() === "Présent");
+                titreModal = "🟢 Membres Présents";
+                badgeBg = "var(--green-soft)";
+                badgeColor = "var(--green-text)";
+            } else if (categorie === "Sorti") {
+                liste = allMembers.filter(m => (m.statut || "").trim() === "Sorti");
+                titreModal = "🔴 Membres Sortis";
+                badgeBg = "var(--red-soft)";
+                badgeColor = "var(--red-text)";
+            } else if (categorie === "Inscrit") {
+                liste = allMembers.filter(m => {
+                    const s = (m.statut || "Inscrit").trim();
+                    return s !== "Présent" && s !== "Sorti";
+                });
+                titreModal = "🔵 Inscrits (en attente d'entrée)";
+                badgeBg = "var(--blue-soft)";
+                badgeColor = "var(--blue-text)";
+            } else {
+                liste = allMembers.slice();
+                titreModal = "📋 Tous les Inscrits";
+                badgeBg = "rgba(99, 102, 241, 0.16)";
+                badgeColor = "#6366f1";
+            }
+
+            document.getElementById("kpi-modal-title").textContent = titreModal;
+            const countBadge = document.getElementById("kpi-modal-count");
+            countBadge.textContent = `${liste.length} membre(s)`;
+            countBadge.style.background = badgeBg;
+            countBadge.style.color = badgeColor;
+
+            const bodyEl = document.getElementById("kpi-modal-body");
+            bodyEl.innerHTML = liste.length === 0
+                ? `<div class="empty-msg">Aucun membre dans cette catégorie.</div>`
+                : liste.map(rendreCarteMembreModale).join("");
+
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function ouvrirModaleParticipant(index) {
+            const membre = displayedMembers[index];
+            if (!membre) return;
+
+            const statut = (membre.statut || "Inscrit").trim();
+            let badgeBg = "var(--blue-soft)";
+            let badgeColor = "var(--blue-text)";
+            if (statut === "Présent") {
+                badgeBg = "var(--green-soft)";
+                badgeColor = "var(--green-text)";
+            } else if (statut === "Sorti") {
+                badgeBg = "var(--red-soft)";
+                badgeColor = "var(--red-text)";
+            }
+
+            document.getElementById("kpi-modal-title").textContent = `👤 ${membre.nom || "Participant"}`;
+            const countBadge = document.getElementById("kpi-modal-count");
+            countBadge.textContent = membre.id || statut;
+            countBadge.style.background = badgeBg;
+            countBadge.style.color = badgeColor;
+
+            document.getElementById("kpi-modal-body").innerHTML = rendreCarteMembreModale(membre);
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function fermerModaleKPI() {
+            document.getElementById("kpi-modal").classList.remove("active");
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") fermerModaleKPI();
+        });
+
+        /* =====================================================================
+           RUBRIQUE 13 (JS) : LISTE INSTITUTIONS & TABLEAU FILTRABLE
+           ===================================================================== */
+        function afficherInstitutions(membres) {
+            const entries = compterCategories(membres, m => m.institution, "Non précisée");
+            const container = document.getElementById("institutions-list");
+            document.getElementById("badge-nb-inst").textContent = entries.length;
+
+            if (entries.length === 0) {
+                container.innerHTML = `<div class="empty-msg">Aucune institution renseignée.</div>`;
+                return;
+            }
+
+            container.innerHTML = entries.map(([nomInst, count]) => `
+                <div class="inst-item" onclick="filtrerParTexte('${nomInst.replace(/'/g, "\\'")}')">
+                    <span class="inst-name" title="${nomInst}">${nomInst}</span>
+                    <span class="inst-count">${count}</span>
+                </div>
+            `).join("");
+        }
+
+        function filtrerParTexte(texte) {
+            const input = document.getElementById("filter-search");
+            input.value = (input.value === texte) ? "" : texte;
+            appliquerFiltresTableau();
+        }
+
+        function appliquerFiltresTableau() {
+            const q = document.getElementById("filter-search").value.toLowerCase().trim();
+            const statutFiltre = document.getElementById("filter-statut").value.trim();
+
+            displayedMembers = allMembers.filter(m => {
+                const statut = (m.statut || "Inscrit").trim();
+                if (statutFiltre && statut !== statutFiltre) return false;
+
+                if (!q) return true;
+                const haystack = [
+                    m.nom, m.id, m.titre, m.institution, m.regime, m.email, statut
+                ].filter(Boolean).join(" ").toLowerCase();
+                return haystack.includes(q);
+            });
+
+            document.getElementById("badge-nb-filtered").textContent = `${displayedMembers.length} affiché(s)`;
+            const tbody = document.getElementById("dashboard-table-body");
+
+            if (displayedMembers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = displayedMembers.map((m, idx) => {
+                const statut = (m.statut || "Inscrit").trim();
+                let badgeClass = "status-inscrit";
+                if (statut === "Présent") badgeClass = "status-present";
+                else if (statut === "Sorti") badgeClass = "status-sorti";
+
+                const photo = resoudrePhotoUrl(m.photo);
+                const titre = (m.titre && m.titre.trim()) ? m.titre.trim() : "—";
+                const inst = (m.institution && m.institution.trim()) ? m.institution.trim() : "—";
+                const regime = (m.regime && m.regime.trim()) ? m.regime.trim() : "Aucun";
+
+                return `
+                    <tr class="clickable-row" onclick="ouvrirModaleParticipant(${idx})">
+                        <td>
+                            <img src="${photo}" alt="${m.nom || ""}"
+                                 onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                                 class="avatar-sm">
+                            <strong>${m.nom || ""}</strong>
+                        </td>
+                        <td>${titre}</td>
+                        <td>${inst}</td>
+                        <td>${regime}</td>
+                        <td><span class="status-badge ${badgeClass}">${statut}</span></td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        document.getElementById("filter-search").addEventListener("input", appliquerFiltresTableau);
+        document.getElementById("filter-statut").addEventListener("change", appliquerFiltresTableau);
+
+        /* =====================================================================
+           RUBRIQUE 14 (JS) : INITIALISATION ET RAFRAÎCHISSEMENT AUTO
+           ===================================================================== */
+        window.onload = () => {
+            appliquerThemeInitial();
+            chargerDonnees();
+            setInterval(chargerDonnees, 15000);
+        };
+    </script>
+</body>
+</html>
