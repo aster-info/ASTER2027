@@ -30,7 +30,7 @@
         }
 
         /* =====================================================================
-           RUBRIQUE 3 : EN-TÊTE ADMIN (LOGO ASTER CONSERVÉ EN HAUT)
+           RUBRIQUE 3 : EN-TÊTE ADMIN (LOGO ASTER ./logo.png RACINE GITHUB)
            ===================================================================== */
         .header {
             display: flex;
@@ -345,12 +345,10 @@
 <body>
 
     <!-- =========================================================================
-         RUBRIQUE 3 (HTML) : EN-TÊTE ADMIN AVEC LOGO ASTER (RACINE DU SITE)
+         RUBRIQUE 3 (HTML) : EN-TÊTE ADMIN AVEC ./logo.png DE LA RACINE GITHUB
          ========================================================================= -->
     <header class="header">
-        <img id="header-logo" src="./logo.png"
-             onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp';"
-             alt="Logo ASTER" class="header-logo">
+        <img id="header-logo" src="./logo.png" alt="Logo ASTER" class="header-logo">
         <h1 class="header-title">Administration</h1>
     </header>
 
@@ -422,8 +420,8 @@
         /* =====================================================================
            RUBRIQUE 7 (JS) : CONFIGURATION ET ÉTAT GLOBAL
            ===================================================================== */
+        // Logo ASTER situé à la racine du dépôt GitHub
         const LOGO_ASTER_URL = "./logo.png";
-        const LOGO_FALLBACK_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
 
         let allMembers = [];
@@ -431,12 +429,15 @@
         /* =====================================================================
            RUBRIQUE 8 (JS) : CONVERSION SÉCURISÉE DES LIENS GOOGLE DRIVE
            ===================================================================== */
+        /**
+         * Convertit un lien Google Drive en lien d'affichage direct.
+         * Si la cellule est vide ou en attente ("attente" / "en attente"), renvoie ./logo.png.
+         */
         function resoudrePhotoUrl(url) {
-            if (!url || typeof url !== "string") return LOGO_FALLBACK_URL;
+            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
             const propre = url.trim();
             const lower = propre.toLowerCase();
 
-            // Si vide ou en attente ("attente", "en attente", "pending", etc.), attribuer le logo ASTER
             if (
                 !propre ||
                 lower === "attente" ||
@@ -446,7 +447,7 @@
                 lower === "none" ||
                 lower === "null"
             ) {
-                return LOGO_FALLBACK_URL;
+                return LOGO_ASTER_URL;
             }
 
             if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
@@ -541,7 +542,7 @@
                 row.innerHTML = `
                     <div class="member-left">
                         <img src="${photoSrc}" alt="${m.nom || "Membre"}"
-                             onerror="this.onerror=null;this.src='${LOGO_FALLBACK_URL}';"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
                              class="member-avatar">
                         <div class="member-info">
                             <div class="member-name">${m.nom || ""}</div>
@@ -582,7 +583,7 @@
 
             imgModal.onerror = function () {
                 this.onerror = null;
-                this.src = LOGO_FALLBACK_URL;
+                this.src = LOGO_ASTER_URL;
             };
             imgModal.src = urlPhotoMembre;
 
