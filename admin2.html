@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- Encodage UTF-8 pour supporter les accents et caractères spéciaux français -->
     <meta charset="UTF-8">
-    <!-- Adaptation de l'affichage sur mobile, tablette et ordinateur -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Titre affiché dans l'onglet du navigateur -->
     <title>Administration - ASTER</title>
-
     <style>
-        /* =====================================================================
-           RUBRIQUE 1 : STYLE GLOBAL ET MISE EN PAGE DE LA PAGE
-           ===================================================================== */
+        /* Réinitialisation et style global fidèle à l'interface ASTER */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f9; /* Fond gris clair apaisant */
+            background-color: #f4f6f9;
             color: #1e293b;
             min-height: 100vh;
             display: flex;
@@ -29,9 +23,7 @@
             padding: 28px 16px 48px;
         }
 
-        /* =====================================================================
-           RUBRIQUE 2 : EN-TÊTE (LOGO ASTER + TITRE "ADMINISTRATION")
-           ===================================================================== */
+        /* En-tête : logo et titre Administration */
         .header {
             display: flex;
             flex-direction: column;
@@ -42,7 +34,7 @@
         .header-logo {
             width: 148px;
             height: 148px;
-            object-fit: contain; /* Conserve les proportions du logo sans le couper */
+            object-fit: contain;
             margin-bottom: 14px;
             filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
         }
@@ -54,9 +46,7 @@
             letter-spacing: -0.02em;
         }
 
-        /* =====================================================================
-           RUBRIQUE 3 : BARRE DES COMPTEURS EN PILULES (In / Out / Inscrits)
-           ===================================================================== */
+        /* Barre des compteurs en pilules : In / Out / Inscrits */
         .counters-bar {
             display: flex;
             flex-wrap: wrap;
@@ -67,7 +57,7 @@
 
         .counter-pill {
             background: #ffffff;
-            border-radius: 999px; /* Forme pilule */
+            border-radius: 999px;
             padding: 8px 16px;
             display: inline-flex;
             align-items: center;
@@ -89,20 +79,18 @@
         }
 
         .badge-in {
-            background-color: #10b981; /* Vert : membres actuellement présents */
+            background-color: #10b981; /* Vert In */
         }
 
         .badge-out {
-            background-color: #ef4444; /* Rouge : membres sortis */
+            background-color: #ef4444; /* Rouge Out */
         }
 
         .badge-total {
-            background-color: #29b6f6; /* Bleu : total des inscrits */
+            background-color: #29b6f6; /* Bleu Inscrits */
         }
 
-        /* =====================================================================
-           RUBRIQUE 4 : CARTE PRINCIPALE, RECHERCHE ET LISTE DES MEMBRES
-           ===================================================================== */
+        /* Carte principale contenant la recherche et la liste scrollable */
         .main-card {
             background: #ffffff;
             width: 100%;
@@ -138,12 +126,12 @@
             box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
         }
 
-        /* Zone scrollable contenant toutes les lignes de membres */
+        /* Liste des membres avec barre de défilement sobre */
         .members-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 430px; /* Limite la hauteur pour garder une barre de défilement propre */
+            max-height: 430px;
             overflow-y: auto;
             padding-right: 6px;
         }
@@ -162,7 +150,7 @@
             border-radius: 8px;
         }
 
-        /* Carte / ligne individuelle d'un membre */
+        /* Ligne / carte d'un membre */
         .member-row {
             display: flex;
             align-items: center;
@@ -188,12 +176,11 @@
             min-width: 0;
         }
 
-        /* Photo de profil ronde du membre dans la liste */
         .member-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            object-fit: cover; /* Recadre proprement le visage sans déformation */
+            object-fit: cover;
             flex-shrink: 0;
             background: #ffffff;
             border: 2px solid #e2e8f0;
@@ -233,7 +220,7 @@
             margin-left: 12px;
         }
 
-        /* Badges visuels selon le statut (Présent / Sorti / Inscrit) */
+        /* Badges de statut */
         .status-badge {
             font-size: 12px;
             font-weight: 700;
@@ -257,12 +244,11 @@
             color: #475569;
         }
 
-        /* Heure affichée sous le badge de statut */
         .member-time {
             font-size: 13px;
             font-weight: 700;
             color: #0f766e;
-            font-variant-numeric: tabular-nums; /* Alignement vertical net des chiffres */
+            font-variant-numeric: tabular-nums;
         }
 
         .empty-state {
@@ -272,15 +258,15 @@
             font-size: 14px;
         }
 
-        /* =====================================================================
-           RUBRIQUE 5 : FENÊTRE MODALE DE DÉTAIL DU MEMBRE
-           ===================================================================== */
+        /* ======================================================================
+           FENÊTRE MODALE DE DÉTAIL DU MEMBRE
+           ====================================================================== */
         .modal-backdrop {
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.55);
             backdrop-filter: blur(3px);
-            display: none; /* Masquée tant qu'aucun membre n'est cliqué */
+            display: none;
             align-items: center;
             justify-content: center;
             padding: 16px;
@@ -288,7 +274,7 @@
         }
 
         .modal-backdrop.active {
-            display: flex; /* Affichée lorsque la classe "active" est ajoutée */
+            display: flex;
         }
 
         .modal-card {
@@ -304,7 +290,6 @@
             text-align: center;
         }
 
-        /* Grande photo ronde du membre dans la fenêtre modale */
         .modal-photo {
             width: 112px;
             height: 112px;
@@ -377,3 +362,253 @@
             width: 100%;
             padding: 13px;
             border: none;
+            border-radius: 12px;
+            background: #29b6f6;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #0288d1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- En-tête -->
+    <header class="header">
+        <img id="header-logo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Logo ASTER" class="header-logo">
+        <h1 class="header-title">Administration</h1>
+    </header>
+
+    <!-- Compteurs -->
+    <section class="counters-bar" aria-label="Compteurs de présence">
+        <div class="counter-pill">
+            <span>In:</span>
+            <span id="count-in" class="badge-count badge-in">0</span>
+        </div>
+        <div class="counter-pill">
+            <span>Out:</span>
+            <span id="count-out" class="badge-count badge-out">0</span>
+        </div>
+        <div class="counter-pill">
+            <span>Inscrits:</span>
+            <span id="count-total" class="badge-count badge-total">0</span>
+        </div>
+    </section>
+
+    <!-- Carte principale -->
+    <main class="main-card">
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Rechercher un membre par nom ou ID...">
+        </div>
+
+        <div id="members-list" class="members-list">
+            <div class="empty-state">Chargement des membres...</div>
+        </div>
+    </main>
+
+    <!-- Fenêtre modale de détail -->
+    <div id="member-modal" class="modal-backdrop" onclick="if(event.target === this) fermerModal()">
+        <div class="modal-card">
+            <img id="modal-member-photo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Photo du membre" class="modal-photo">
+            <h2 id="modal-name" class="modal-name">Nom du membre</h2>
+            <div id="modal-id" class="modal-id">ASTER-JMEMBRES2026-000</div>
+            <div id="modal-titre" class="modal-titre">Titre</div>
+
+            <div class="modal-details">
+                <div class="modal-row">
+                    <span class="modal-label">📧 Email :</span>
+                    <span id="modal-email" class="modal-value">--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📥 Arrivée :</span>
+                    <span id="modal-arrivee" class="modal-value">--:--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📤 Départ :</span>
+                    <span id="modal-depart" class="modal-value">--:--</span>
+                </div>
+                <div class="modal-row">
+                    <span class="modal-label">📌 Statut :</span>
+                    <span id="modal-statut" class="modal-value">--</span>
+                </div>
+            </div>
+
+            <button type="button" class="modal-close-btn" onclick="fermerModal()">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        // Logo par défaut ASTER si un membre n'a pas de photo
+        const LOGO_ASTER_URL = "https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp";
+
+        // ⚠️ REMPLACEZ PAR L'URL DE VOTRE WEB APP GOOGLE APPS SCRIPT (/exec)
+        const WEB_APP_URL = "https://script.google.com/macros/s/VOTRE_ID_DE_WEB_APP/exec";
+
+        let allMembers = [];
+
+        /**
+         * Charge la liste des membres via JSONP
+         */
+        function chargerMembres() {
+            const oldScript = document.getElementById("jsonp-members-script");
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement("script");
+            script.id = "jsonp-members-script";
+            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("members-list").innerHTML =
+                    `<div class="empty-state">Erreur de chargement des données.</div>`;
+            };
+            document.body.appendChild(script);
+        }
+
+        /**
+         * Traite la réponse JSONP envoyée par Code.gs
+         */
+        function traiterDonneesMembres(response) {
+            if (response && response.success && Array.isArray(response.members)) {
+                allMembers = response.members;
+                mettreAJourCompteurs(allMembers);
+                appliquerFiltre();
+            }
+        }
+
+        /**
+         * Extrait l'heure (HH:mm:ss si présente, sinon HH:mm ou valeur brute)
+         */
+        function formaterHeureCourte(valeurHeure) {
+            if (!valeurHeure || valeurHeure === "--:--") return "";
+            const str = String(valeurHeure).trim();
+            // Si format "dd/MM/yyyy HH:mm:ss" ou "dd/MM/yyyy HH:mm"
+            const matchTime = str.match(/(\d{2}:\d{2}(?::\d{2})?)/);
+            return matchTime ? matchTime[1] : str;
+        }
+
+        /**
+         * Affiche les lignes membres selon le format souhaité
+         */
+        function afficherMembres(membres) {
+            const container = document.getElementById("members-list");
+            container.innerHTML = "";
+
+            if (!membres || membres.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun membre trouvé.</div>`;
+                return;
+            }
+
+            membres.forEach(m => {
+                const statut = (m.statut || "Inscrit").trim();
+                let badgeClass = "status-inscrit";
+                if (statut === "Présent") badgeClass = "status-present";
+                else if (statut === "Sorti") badgeClass = "status-sorti";
+
+                const photoSrc = (m.photo && String(m.photo).trim() !== "")
+                    ? String(m.photo).trim()
+                    : LOGO_ASTER_URL;
+
+                // Priorité à l'heure de sortie si "Sorti", sinon heure d'arrivée, sinon m.heure
+                const rawTime = statut === "Sorti"
+                    ? (m.depart && m.depart !== "--:--" ? m.depart : m.heure)
+                    : (m.arrivee && m.arrivee !== "--:--" ? m.arrivee : m.heure);
+                const heureAffichee = formaterHeureCourte(rawTime);
+
+                const row = document.createElement("div");
+                row.className = "member-row";
+                row.onclick = () => ouvrirModal(m);
+
+                row.innerHTML = `
+                    <div class="member-left">
+                        <img src="${photoSrc}" alt="${m.nom || "Membre"}"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';"
+                             class="member-avatar">
+                        <div class="member-info">
+                            <div class="member-name">${m.nom || ""}</div>
+                            <div class="member-id">${m.id || ""}</div>
+                        </div>
+                    </div>
+                    <div class="member-right">
+                        <span class="status-badge ${badgeClass}">${statut}</span>
+                        ${heureAffichee ? `<span class="member-time">${heureAffichee}</span>` : ""}
+                    </div>
+                `;
+
+                container.appendChild(row);
+            });
+        }
+
+        /**
+         * Met à jour les compteurs In / Out / Inscrits
+         */
+        function mettreAJourCompteurs(membres) {
+            const inCount = membres.filter(m => (m.statut || "").trim() === "Présent").length;
+            const outCount = membres.filter(m => (m.statut || "").trim() === "Sorti").length;
+            const totalCount = membres.length;
+
+            document.getElementById("count-in").textContent = inCount;
+            document.getElementById("count-out").textContent = outCount;
+            document.getElementById("count-total").textContent = totalCount;
+        }
+
+        /**
+         * Applique la recherche par nom ou ID
+         */
+        function appliquerFiltre() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            if (!query) {
+                afficherMembres(allMembers);
+                return;
+            }
+            const filtered = allMembers.filter(m =>
+                (m.nom && m.nom.toLowerCase().includes(query)) ||
+                (m.id && m.id.toLowerCase().includes(query))
+            );
+            afficherMembres(filtered);
+        }
+
+        document.getElementById("search-input").addEventListener("input", appliquerFiltre);
+
+        /**
+         * Ouvre la modale avec la photo du membre et ses détails
+         */
+        function ouvrirModal(m) {
+            const imgModal = document.getElementById("modal-member-photo");
+            const photoMembre = (m && m.photo && typeof m.photo === "string") ? m.photo.trim() : "";
+
+            imgModal.onerror = function () {
+                this.onerror = null;
+                this.src = LOGO_ASTER_URL;
+            };
+            imgModal.src = photoMembre !== "" ? photoMembre : LOGO_ASTER_URL;
+
+            document.getElementById("modal-name").textContent = (m && m.nom) ? m.nom : "Nom inconnu";
+            document.getElementById("modal-id").textContent = (m && m.id) ? m.id : "";
+            document.getElementById("modal-titre").textContent = (m && m.titre) ? m.titre : "Membre ASTER";
+            document.getElementById("modal-email").textContent = (m && m.email) ? m.email : "Non renseigné";
+            document.getElementById("modal-arrivee").textContent = (m && m.arrivee) ? m.arrivee : "--:--";
+            document.getElementById("modal-depart").textContent = (m && m.depart) ? m.depart : "--:--";
+            document.getElementById("modal-statut").textContent = (m && m.statut) ? m.statut : "Inscrit";
+
+            document.getElementById("member-modal").classList.add("active");
+        }
+
+        /**
+         * Ferme la modale
+         */
+        function fermerModal() {
+            document.getElementById("member-modal").classList.remove("active");
+        }
+
+        // Chargement initial + rafraîchissement toutes les 10 secondes
+        window.onload = () => {
+            chargerMembres();
+            setInterval(chargerMembres, 10000);
+        };
+    </script>
+</body>
+</html>
