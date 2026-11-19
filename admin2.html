@@ -4,36 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - ASTER</title>
-    <!-- Importation de Tailwind CSS pour un design moderne, épuré et responsive -->
+    <!-- Tailwind CSS pour la mise en page -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col items-center py-10 px-4">
 
     <!-- ========================================================================== -->
-    <!-- EN-TÊTE DE LA PAGE -->
+    <!-- EN-TÊTE -->
     <!-- ========================================================================== -->
     <div class="text-center mb-8">
-        <!-- Logo ASTER récupéré directement depuis Google Drive -->
         <img src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Logo ASTER" class="w-24 h-24 mx-auto mb-3 object-contain drop-shadow-md">
         <h1 class="text-2xl font-bold text-slate-900">Administration du Congrès</h1>
         <p class="text-sm text-slate-500">Suivi des présences et des flux en temps réel</p>
     </div>
 
     <!-- ========================================================================== -->
-    <!-- COMPTEURS DYNAMIQUES (In / Out / Total Inscrits) -->
+    <!-- COMPTEURS DYNAMIQUES (In / Out / Inscrits) -->
     <!-- ========================================================================== -->
     <div class="flex flex-wrap justify-center gap-4 mb-6 w-full max-w-2xl">
-        <!-- Compteur des membres actuellement Présents (In) -->
         <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-3">
             <span class="text-sm font-medium text-slate-500">In :</span>
             <span id="count-in" class="bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-bold">0</span>
         </div>
-        <!-- Compteur des membres ayant quitté l'événement (Out) -->
         <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-3">
             <span class="text-sm font-medium text-slate-500">Out :</span>
             <span id="count-out" class="bg-rose-600 text-white px-3 py-1 rounded-full text-sm font-bold">0</span>
         </div>
-        <!-- Compteur du nombre total d'inscrits -->
         <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-3">
             <span class="text-sm font-medium text-slate-500">Inscrits :</span>
             <span id="count-total" class="bg-sky-600 text-white px-3 py-1 rounded-full text-sm font-bold">0</span>
@@ -41,99 +37,12 @@
     </div>
 
     <!-- ========================================================================== -->
-    <!-- CONTENEUR PRINCIPAL (Recherche + Liste des membres) -->
+    <!-- RECHERCHE ET LISTE DES MEMBRES -->
     <!-- ========================================================================== -->
     <div class="bg-white w-full max-w-2xl rounded-3xl shadow-lg border border-slate-200 p-6">
-        
-        <!-- Barre de recherche textuelle en temps réel -->
         <div class="mb-6">
             <input type="text" id="search-input" placeholder="Rechercher un membre par nom, prénom ou ID..." 
                 class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm">
         </div>
 
-        <!-- Conteneur de la liste dynamique des membres -->
-        <div id="members-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-            <!-- Message de chargement initial par défaut -->
-            <div class="text-center text-slate-400 py-8">Chargement des membres...</div>
-        </div>
-    </div>
-
-    <!-- ========================================================================== -->
-    <!-- FENÊTRE MODALE (Détails complets d'un membre au clic) -->
-    <!-- ========================================================================== -->
-    <div id="member-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 relative flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-            
-            <!-- Photo du membre dans la modale (S'actualise dynamiquement) -->
-            <img id="modal-member-photo" src="https://lh3.googleusercontent.com/d/16K63CAaU5hdtIBjj9FX5j6IKXQQeanZp" alt="Photo" class="w-24 h-24 rounded-full object-cover border-4 border-blue-100 shadow-md mb-4">
-            
-            <!-- Nom et identifiant du membre -->
-            <h3 id="modal-name" class="text-xl font-bold text-slate-900">Nom du membre</h3>
-            <p id="modal-id" class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full mt-1 mb-2">MBR-0000</p>
-            <p id="modal-titre" class="text-sm text-slate-500 mb-6">Titre — Institution</p>
-
-            <!-- Bloc d'informations détaillées -->
-            <div class="w-full bg-slate-50 rounded-2xl p-4 space-y-3 text-left text-sm mb-6 border border-slate-100">
-                <div class="flex justify-between"><span class="text-slate-500">📧 Email :</span> <span id="modal-email" class="font-medium text-slate-800">--</span></div>
-                <div class="flex justify-between"><span class="text-slate-500">📥 Arrivée :</span> <span id="modal-arrivee" class="font-medium text-slate-800">--:--</span></div>
-                <div class="flex justify-between"><span class="text-slate-500">📤 Départ :</span> <span id="modal-depart" class="font-medium text-slate-800">--:--</span></div>
-                <div class="flex justify-between"><span class="text-slate-500">📌 Statut :</span> <span id="modal-statut" class="font-bold text-slate-800">--</span></div>
-            </div>
-
-            <!-- Bouton pour fermer la fenêtre modale -->
-            <button onclick="fermerModal()" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm">
-                Fermer
-            </button>
-        </div>
-    </div>
-
-    <!-- ========================================================================== -->
-    <!-- LOGIQUE JAVASCRIPT ET INTERACTIONS -->
-    <!-- ========================================================================== -->
-    <script>
-        // ⚠️ REMPLACEZ CETTE URL PAR VOTRE URL DE WEB APP GOOGLE APPS SCRIPT DÉPLOYÉE (/exec)
-        const WEB_APP_URL = "https://script.google.com/macros/s/VOTRE_ID_DE_WEB_APP/exec";
-
-        // Tableau global stockant la liste complète des membres récupérée depuis Google Sheets
-        let allMembers = [];
-
-        /**
-         * Étape 1 : Charge les données des membres via JSONP en injectant dynamiquement une balise <script>
-         */
-        function chargerMembres() {
-            const script = document.createElement('script');
-            script.src = `${WEB_APP_URL}?action=getmembers&callback=traiterDonneesMembres`;
-            document.body.appendChild(script);
-            script.onerror = () => {
-                document.getElementById('members-list').innerHTML = `<div class="text-center text-rose-500 py-4">Erreur de chargement des données.</div>`;
-            };
-        }
-
-        /**
-         * Étape 2 : Traite la réponse reçue de Google Apps Script et actualise l'interface
-         */
-        function traiterDonneesMembres(response) {
-            if (response && response.success) {
-                allMembers = response.members;
-                afficherMembres(allMembers);
-                mettreAJourCompteurs(allMembers);
-            }
-        }
-
-        /**
-         * Étape 3 : Génère et affiche dynamiquement la liste des cartes de membres dans le HTML
-         */
-        function afficherMembres(membres) {
-            const listContainer = document.getElementById('members-list');
-            listContainer.innerHTML = '';
-
-            if (membres.length === 0) {
-                listContainer.innerHTML = `<div class="text-center text-slate-400 py-4">Aucun membre trouvé.</div>`;
-                return;
-            }
-
-            membres.forEach(m => {
-                // Attribution d'une couleur de badge selon le statut actuel
-                let badgeColor = 'bg-slate-100 text-slate-600';
-                if (m.statut === 'Présent') badgeColor = 'bg-emerald-100 text-emerald-700';
-                if (m.statut === 'Sorti') badge
+        <div id="members
