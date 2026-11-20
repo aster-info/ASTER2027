@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- =====================================================================
+         RUBRIQUE 1 : MÉTADONNÉES, SCANNER CAMÉRA (HTML5-QRCODE) & TITRE
+         ===================================================================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorties - ASTER</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        /* =====================================================================
+           RUBRIQUE 2 : VARIABLES DE COULEURS — MODE CLAIR & MODE SOMBRE
+           ===================================================================== */
+        :root {
+            --bg-top: #f8fafc;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --card-soft: #f8fafc;
+            --text: #0f172a;
+            --text-secondary: #334155;
+            --dark-gray: #334155;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --input-border: #cbd5e1;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --primary-dark: #0f2942;
+            --green: #10b981;
+            --green-soft: #dcfce7;
+            --green-text: #15803d;
+            --amber-soft: #fef3c7;
+            --amber-text: #b45309;
+            --red-soft: #fee2e2;
+            --red-text: #b91c1c;
+            --ghost-bg: #f1f5f9;
+            --ghost-hover: #e2e8f0;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        body.dark-mode {
+            --bg-top: #0b1120;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-soft: #0f172a;
+            --text: #f8fafc;
+            --text-secondary: #e2e8f0;
+            --dark-gray: #cbd5e1;
+            --muted: #94a3b8;
+            --border: #334155;
+            --input-border: #475569;
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --primary-dark: #f1f5f9;
+            --green: #10b981;
+            --green-soft: rgba(16, 185, 129, 0.18);
+            --green-text: #4ade80;
+            --amber-soft: rgba(245, 158, 11, 0.18);
+            --amber-text: #fbbf24;
+            --red-soft: rgba(239, 68, 68, 0.18);
+            --red-text: #f87171;
+            --ghost-bg: #334155;
+            --ghost-hover: #475569;
+            --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 28px 18px 56px;
+            transition: background-color 0.25s, color 0.25s;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        /* =====================================================================
+           RUBRIQUE 3 : EN-TÊTE PRINCIPAL + BOUTON THÈME EN BAS À DROITE
+           ===================================================================== */
+        .top-header {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px 26px 56px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .header-logo {
+            width: 78px;
+            height: 78px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.08));
+        }
+
+        .brand-eyebrow {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--dark-gray);
+            letter-spacing: 0.02em;
+            margin-bottom: 2px;
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-soft);
+            border: 1px solid var(--border);
+            padding: 9px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-1px); }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-ghost {
+            background: var(--ghost-bg);
+            color: var(--primary-dark);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { background: var(--ghost-hover); }
+
+        .theme-toggle-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 14px;
+            border: 1px solid var(--border);
+            background: var(--card-soft);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 6px 13px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-1px);
+            background: var(--ghost-hover);
+        }
+
+        /* =====================================================================
+           RUBRIQUE 4 : CAMÉRA, ZONE DE SCAN / SAISIE & DERNIÈRES SORTIES
+           ===================================================================== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+        }
+
+        .panel-desc {
+            font-size: 13.5px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .camera-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .camera-box {
+            width: 100%;
+            min-height: 260px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1.5px dashed var(--input-border);
+            background: var(--card-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .camera-placeholder {
+            text-align: center;
+            padding: 24px 16px;
+            color: var(--muted);
+            font-size: 13.5px;
+        }
+
+        .scan-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .scan-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px 16px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 14px;
+            font-size: 15px;
+            color: var(--text);
+            background: var(--card-soft);
+            outline: none;
+        }
+
+        .scan-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.16);
+        }
+
+        .feedback-box {
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--card-soft);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .feedback-ok {
+            background: var(--green-soft);
+            color: var(--green-text);
+            border-color: transparent;
+            font-weight: 700;
+        }
+
+        .feedback-warn {
+            background: var(--amber-soft);
+            color:
