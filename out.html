@@ -32,6 +32,12 @@
             --green-text: #15803d;
             --amber-soft: #fef3c7;
             --amber-text: #b45309;
+            --orange-soft: #fff7ed;
+            --orange-border: #fdba74;
+            --orange-text: #c2410c;
+            --sky-soft: #e0f2fe;
+            --sky-border: #7dd3fc;
+            --sky-text: #0369a1;
             --red-soft: #fee2e2;
             --red-text: #b91c1c;
             --ghost-bg: #f1f5f9;
@@ -58,6 +64,12 @@
             --green-text: #4ade80;
             --amber-soft: rgba(245, 158, 11, 0.18);
             --amber-text: #fbbf24;
+            --orange-soft: rgba(249, 115, 22, 0.18);
+            --orange-border: rgba(251, 146, 60, 0.35);
+            --orange-text: #fdba74;
+            --sky-soft: rgba(56, 189, 248, 0.18);
+            --sky-border: rgba(125, 211, 252, 0.35);
+            --sky-text: #7dd3fc;
             --red-soft: rgba(239, 68, 68, 0.18);
             --red-text: #f87171;
             --ghost-bg: #334155;
@@ -445,6 +457,26 @@
             margin-bottom: 18px;
         }
 
+        .modal-msg.msg-enquete-requise {
+            background: var(--orange-soft);
+            border-color: var(--orange-border);
+            color: var(--orange-text);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-msg.msg-enquete-remplie {
+            background: var(--sky-soft);
+            border-color: var(--sky-border);
+            color: var(--sky-text);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .modal-actions {
             display: flex;
             justify-content: flex-end;
@@ -731,16 +763,42 @@
             `).join("");
         }
 
+        function marquerEnqueteRemplie() {
+            const msgEl = document.getElementById("modal-msg");
+            msgEl.className = "modal-msg msg-enquete-remplie";
+            msgEl.innerHTML = `<span>ℹ️</span><span>Enquête remplie</span>`;
+        }
+
         function ouvrirModaleResultat(res) {
             document.getElementById("modal-avatar").src = resoudrePhoto(res.photo);
             document.getElementById("modal-name").textContent = res.name || res.memberId || "Membre";
             document.getElementById("modal-sub").textContent = `${res.memberId || ""}${res.titre ? " • " + res.titre : ""}`;
-            document.getElementById("modal-msg").textContent = res.message || "";
+
+            const msgEl = document.getElementById("modal-msg");
+            const texteBrut = String(res.message || "");
+            const statutBrut = String(res.status || "").toLowerCase();
+            const enqueteRemplie =
+                /enqu[eê]te\s+remplie|enqu[eê]te\s+compl[eé]t[eé]e|enqu[eê]te\s+valid[eé]e/i.test(texteBrut) ||
+                statutBrut === "enquete_remplie" ||
+                statutBrut === "enquete_completee";
+
+            msgEl.className = "modal-msg";
+
+            if (enqueteRemplie) {
+                msgEl.classList.add("msg-enquete-remplie");
+                msgEl.innerHTML = `<span>ℹ️</span><span>${texteBrut || "Enquête remplie"}</span>`;
+            } else if (res.status === "enquete_requise" || /enqu[eê]te\s+requise/i.test(texteBrut)) {
+                msgEl.classList.add("msg-enquete-requise");
+                const textePropre = texteBrut.replace(/^⚠️\s*/u, "") || "Enquête requise avant la sortie";
+                msgEl.innerHTML = `<span>⚠️</span><span>${textePropre}</span>`;
+            } else {
+                msgEl.textContent = texteBrut;
+            }
 
             const actionsEl = document.getElementById("modal-actions");
             if (res.status === "enquete_requise" && res.redirectUrl) {
                 actionsEl.innerHTML = `
-                    <a href="${res.redirectUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">📝 Ouvrir l'enquête</a>
+                    <a href="${res.redirectUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" onclick="marquerEnqueteRemplie()">📝 Ouvrir l'enquête</a>
                     <button type="button" class="btn btn-primary" onclick="fermerModale()">Fermer</button>
                 `;
             } else {
