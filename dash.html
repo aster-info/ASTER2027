@@ -79,7 +79,7 @@
             --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
         }
 
-        *, *::before, *::after {
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -95,7 +95,7 @@
         }
 
         .container {
-            max-width: 1240px;
+            max-width: 1180px;
             margin: 0 auto;
         }
 
@@ -369,7 +369,7 @@
            ===================================================================== */
         .bottom-grid {
             display: grid;
-            grid-template-columns: 0.9fr 1.6fr;
+            grid-template-columns: 1fr 1.35fr;
             gap: 20px;
         }
 
@@ -391,7 +391,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 430px;
+            max-height: 410px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -457,8 +457,8 @@
         }
 
         .members-table-wrap {
-            max-height: 370px;
-            overflow: auto;
+            max-height: 350px;
+            overflow-y: auto;
         }
 
         table {
@@ -476,7 +476,6 @@
             position: sticky;
             top: 0;
             background: var(--card);
-            z-index: 1;
         }
 
         td {
@@ -504,25 +503,6 @@
             background: var(--card);
             vertical-align: middle;
             margin-right: 8px;
-        }
-
-        .dates-chip-wrap {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .date-chip {
-            display: inline-block;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 8px;
-            background: var(--card-soft);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
         }
 
         .status-badge {
@@ -672,6 +652,12 @@
             margin-bottom: 6px;
         }
 
+        .modal-member-id {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
         .modal-member-lines {
             display: flex;
             flex-direction: column;
@@ -705,6 +691,48 @@
             font-variant-numeric: tabular-nums;
         }
 
+        .email-sent-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .email-pending-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: auto;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #c2410c;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        body.dark-mode .email-sent-badge {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(52, 211, 153, 0.35);
+            color: #6ee7b7;
+        }
+
+        body.dark-mode .email-pending-badge {
+            background: rgba(249, 115, 22, 0.16);
+            border-color: rgba(251, 146, 60, 0.35);
+            color: #fdba74;
+        }
+
         .kpi-modal-footer {
             padding: 14px 24px;
             border-top: 1px solid var(--border);
@@ -725,7 +753,7 @@
                 <div>
                     <div class="brand-eyebrow">25ème congrès 9 et 10 avril 2027</div>
                     <h1 class="brand-title">Tableau de Bord ASTER</h1>
-                    <p class="brand-subtitle">Présences, dates de participation, régimes alimentaires, titres et institutions en temps réel</p>
+                    <p class="brand-subtitle">Présences, régimes alimentaires, titres et institutions en temps réel</p>
                 </div>
             </div>
 
@@ -831,7 +859,7 @@
         </section>
 
         <!-- =================================================================
-             RUBRIQUE 6 (HTML) : SYNTHÈSE INSTITUTIONS & LISTE PARTICIPANTS
+             RUBRIQUE 6 (HTML) : DÉTAIL INSTITUTIONS & LISTE PARTICIPANTS
              ================================================================= -->
         <section class="bottom-grid">
             <article class="panel-card">
@@ -846,7 +874,7 @@
 
             <article class="panel-card">
                 <div class="card-header">
-                    <h2 class="card-title">👥 Participants & Dates de participation</h2>
+                    <h2 class="card-title">👥 Participants</h2>
                     <span id="badge-nb-filtered" class="card-tag">0 affiché(s)</span>
                 </div>
 
@@ -865,13 +893,14 @@
                         <thead>
                             <tr>
                                 <th>Membre</th>
+                                <th>Titre</th>
                                 <th>Institution</th>
-                                <th>Dates de participation</th>
+                                <th>Régime</th>
                                 <th>Statut</th>
                             </tr>
                         </thead>
                         <tbody id="dashboard-table-body">
-                            <tr><td colspan="4" class="empty-msg">Chargement des données...</td></tr>
+                            <tr><td colspan="5" class="empty-msg">Chargement des données...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -902,14 +931,12 @@
 
     <script>
         /* =====================================================================
-           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME, DATES & ÉTAT GLOBAL
+           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME ET ÉTAT GLOBAL
            ===================================================================== */
         const LOGO_ASTER_URL = "./logo.png";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
         const THEME_STORAGE_KEY = "aster_dashboard_theme";
 
-        const ACTIONS_CANDIDATES = ["dashboard", "getDashboard", "list", "getMembers", ""];
-        let actionIndex = 0;
         let allMembers = [];
         let displayedMembers = [];
         let charts = {};
@@ -977,107 +1004,64 @@
                 .replace(/'/g, "&#39;");
         }
 
-        function normaliserDateLisible(val) {
-            if (!val) return "";
-            if (Array.isArray(val)) {
-                return val.map(normaliserDateLisible).filter(Boolean).join(", ");
-            }
-            const brute = String(val).trim();
-            if (!brute) return "";
-            const d = new Date(brute);
-            if (!isNaN(d.getTime()) && /\d{4}-\d{2}-\d{2}|T\d{2}:\d{2}|GMT|UTC/i.test(brute)) {
-                const aUneHeure = /T\d{2}:\d{2}|\d{1,2}:\d{2}/.test(brute);
-                return aUneHeure
-                    ? d.toLocaleString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
-                    : d.toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" });
-            }
-            return brute;
-        }
-
+        // Récupère les dates cochées dans "Participation à la journée du :" (ex: "Vendredi 9 avril 2027, Samedi 10 avril 2027")
         function extraireDatesParticipation(m) {
             const candidats = [
+                m["Participation à la journée du :"],
+                m["Participation à la journée du"],
+                m.participationJournee,
+                m.participation,
                 m.datesParticipation,
                 m.participationDates,
                 m.datesPresence,
                 m.presences,
                 m.participations,
                 m.joursParticipation,
-                m.jours,
                 m.dates
             ];
 
             for (const c of candidats) {
                 if (Array.isArray(c) && c.length > 0) {
-                    return c.map(normaliserDateLisible).filter(Boolean);
+                    return c.map(x => String(x || "").trim()).filter(Boolean);
                 }
                 if (typeof c === "string" && c.trim()) {
-                    return c.split(/[,;|]+/).map(s => normaliserDateLisible(s)).filter(Boolean);
+                    return c.split(",").map(s => s.trim()).filter(Boolean);
                 }
             }
-
-            const fallback = [m.dateEntree, m.entryDate, m.dateInscription, m.timestamp]
-                .map(normaliserDateLisible)
-                .filter(Boolean);
-            return fallback.length ? [fallback[0]] : [];
+            return [];
         }
 
-        function chargerDonnees(resetIndex = true) {
-            if (resetIndex) actionIndex = 0;
-            const actionCourante = ACTIONS_CANDIDATES[actionIndex] || "";
+        function chargerDonnees() {
             document.getElementById("last-update").textContent = "Mise à jour...";
-
             const oldScript = document.getElementById("jsonp-dashboard-script");
             if (oldScript) oldScript.remove();
 
-            const queryAction = actionCourante ? `action=${encodeURIComponent(actionCourante)}&` : "";
             const script = document.createElement("script");
             script.id = "jsonp-dashboard-script";
-            script.src = `${WEB_APP_URL}?${queryAction}callback=traiterDonneesDashboard&_t=${Date.now()}`;
+            script.src = `${WEB_APP_URL}?action=dashboard&callback=traiterDonneesDashboard&_t=${Date.now()}`;
             script.onerror = () => {
                 document.getElementById("last-update").textContent = "Erreur de chargement";
             };
             document.body.appendChild(script);
         }
 
-        function extraireListeMembres(data) {
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            if (Array.isArray(data.members)) return data.members;
-            if (Array.isArray(data.data)) return data.data;
-            if (Array.isArray(data.participants)) return data.participants;
-            if (Array.isArray(data.rows)) return data.rows;
-            if (Array.isArray(data.items)) return data.items;
-            return [];
-        }
-
         function traiterDonneesDashboard(data) {
-            console.log("Réponse JSONP Dashboard :", data);
-            const liste = extraireListeMembres(data);
-
-            // Si l'action essayée n'est pas reconnue par le script Apps Script, tente la suivante
-            if ((!Array.isArray(liste) || liste.length === 0) && actionIndex + 1 < ACTIONS_CANDIDATES.length) {
-                actionIndex++;
-                chargerDonnees(false);
-                return;
-            }
-
-            if (!Array.isArray(liste) || liste.length === 0) {
-                const detail = data && data.message ? ` (${data.message})` : "";
-                document.getElementById("last-update").textContent = `Données indisponibles${detail}`;
-                document.getElementById("dashboard-table-body").innerHTML =
-                    `<tr><td colspan="4" class="empty-msg">Aucune donnée reçue du Web App${detail}.</td></tr>`;
+            const liste = Array.isArray(data) ? data : (data && (data.members || data.data || data.participants || data.rows || data.items));
+            if (!Array.isArray(liste)) {
+                document.getElementById("last-update").textContent = "Données indisponibles";
                 return;
             }
 
             allMembers = liste.map(m => ({
                 ...m,
                 name: m.name || m.nom || m.fullName || ((m.prenom || "") + " " + (m.nomFamille || "")).trim(),
-                memberId: m.memberId || m.id || m.matricule || m.code || "",
-                status: m.status || m.statut || m.etat || "Inscrit",
-                institution: m.institution || m.etablissement || m.hopital || m.organisation || "",
-                titre: m.titre || m.fonction || m.role || "",
-                regime: m.regime || m.regimeAlimentaire || m.diet || "",
-                photo: m.photo || m.photoUrl || m.avatar || "",
+                memberId: m.memberId || m.id || m.matricule || "",
+                status: m.status || m.statut || "Inscrit",
+                institution: m.institution || m.etablissement || "",
+                titre: m.titre || m.fonction || "",
+                regime: m.regime || m.regimeAlimentaire || "Aucun",
+                email: m.email || m.courriel || m.mail || "",
+                photo: m.photo || m.photoUrl || "",
                 _datesParticipation: extraireDatesParticipation(m)
             }));
 
@@ -1162,7 +1146,7 @@
             });
 
             detruireChart("regimes");
-            const regimesData = compterPropriete(allMembers, m => m.regime, "Standard / Non précisé");
+            const regimesData = compterPropriete(allMembers, m => m.regime, "Aucun");
             charts.regimes = new Chart(document.getElementById("chartRegimes"), {
                 type: "pie",
                 data: {
@@ -1274,7 +1258,6 @@
                     (m.titre || "").toLowerCase().includes(q) ||
                     (m.institution || "").toLowerCase().includes(q) ||
                     (m.regime || "").toLowerCase().includes(q) ||
-                    (m.memberId || "").toLowerCase().includes(q) ||
                     datesTexte.includes(q)
                 );
             });
@@ -1290,19 +1273,10 @@
             return `<span class="status-badge status-inscrit">Inscrit</span>`;
         }
 
-        function renderDatesChips(dates) {
-            if (!dates || !dates.length) {
-                return `<span style="color:var(--muted);font-size:12px;">Aucune date</span>`;
-            }
-            return `<div class="dates-chip-wrap">${
-                dates.map(d => `<span class="date-chip">📅 ${escapeHtml(d)}</span>`).join("")
-            }</div>`;
-        }
-
         function renderTableau() {
             const tbody = document.getElementById("dashboard-table-body");
             if (!displayedMembers.length) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
                 return;
             }
 
@@ -1312,19 +1286,23 @@
                         <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="avatar-sm"
                              onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
                         <strong>${escapeHtml(m.name || "—")}</strong>
-                        ${m.titre ? `<div style="font-size:11.5px;color:var(--muted);padding-left:46px;">${escapeHtml(m.titre)}</div>` : ""}
                     </td>
+                    <td>${escapeHtml(m.titre || "—")}</td>
                     <td>${escapeHtml(m.institution || "—")}</td>
-                    <td>${renderDatesChips(m._datesParticipation)}</td>
+                    <td>${escapeHtml(m.regime || "Aucun")}</td>
                     <td>${badgeStatutHTML(m.status)}</td>
                 </tr>
             `).join("");
         }
 
         function construireCarteMembreModale(m) {
-            const dates = m._datesParticipation || [];
-            const datesLigne = dates.length ? dates.join(" • ") : "Aucune date enregistrée";
             const statut = m.status || "Inscrit";
+            const arrivee = m.heureEntree || m.arrivee || "--:--";
+            const depart = m.heureSortie || m.depart || "--:--";
+            const datesTexte = (m._datesParticipation && m._datesParticipation.length)
+                ? m._datesParticipation.join(", ")
+                : "Non précisé";
+            const emailEnvoye = Boolean(m.emailEnvoye || m.confirmationSent || m.emailSent);
 
             return `
                 <div class="modal-member-item">
@@ -1332,22 +1310,28 @@
                         <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="modal-member-avatar"
                              onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
                         <div>
-                            <div class="modal-member-name">${escapeHtml(m.name || "Membre")}</div>
+                            <div class="modal-member-name">
+                                ${escapeHtml(m.name || "Membre")}
+                                ${m.memberId ? `<span class="modal-member-id">(${escapeHtml(m.memberId)})</span>` : ""}
+                            </div>
                             <div class="modal-member-lines">
-                                <div><span class="modal-field-label">ID :</span> ${escapeHtml(m.memberId || "—")}</div>
-                                <div><span class="modal-field-label">Titre :</span> ${escapeHtml(m.titre || "—")}</div>
-                                <div><span class="modal-field-label">Institution :</span> ${escapeHtml(m.institution || "—")}</div>
-                                <div><span class="modal-field-label">Régime :</span> ${escapeHtml(m.regime || "Standard")}</div>
-                                <div><span class="modal-field-label">Dates de participation :</span> <strong>${escapeHtml(datesLigne)}</strong></div>
+                                <div>🏅 <span class="modal-field-label">Titre :</span> <strong>${escapeHtml(m.titre || "—")}</strong></div>
+                                <div>🏥 <span class="modal-field-label">Institution :</span> <strong>${escapeHtml(m.institution || "—")}</strong></div>
+                                <div>📧 <span class="modal-field-label">E-mail :</span> <strong>${escapeHtml(m.email || "—")}</strong></div>
+                                <div>🍽️ <span class="modal-field-label">Régime :</span> <strong>${escapeHtml(m.regime || "Aucun")}</strong></div>
+                                <div>📅 <span class="modal-field-label">Participation :</span> <strong>${escapeHtml(datesTexte)}</strong></div>
+                                <div>🕒 <span class="modal-field-label">Arrivée / Départ :</span> <strong>${escapeHtml(arrivee)} / ${escapeHtml(depart)}</strong></div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-member-right">
                         <div class="modal-member-top-status">
                             ${badgeStatutHTML(statut)}
-                            ${m.heureEntree ? `<div class="modal-member-time">Entrée : ${escapeHtml(m.heureEntree)}</div>` : ""}
-                            ${m.heureSortie ? `<div class="modal-member-time">Sortie : ${escapeHtml(m.heureSortie)}</div>` : ""}
                         </div>
+                        ${emailEnvoye
+                            ? `<span class="email-sent-badge">✉️ Email confirmation envoyé</span>`
+                            : `<span class="email-pending-badge">✉️ Email confirmation à envoyer</span>`
+                        }
                     </div>
                 </div>
             `;
@@ -1365,7 +1349,7 @@
                 titre = "Membres Sortis";
             } else if (categorie === "Inscrit") {
                 liste = allMembers.filter(m => !m.status || m.status === "Inscrit");
-                titre = "Inscrits en attente";
+                titre = "Inscrits (en attente d'entrée)";
             } else {
                 liste = allMembers.slice();
                 titre = "Tous les membres inscrits";
@@ -1402,7 +1386,7 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             appliquerThemeInitial();
-            chargerDonnees(true);
+            chargerDonnees();
         });
     </script>
 </body>
