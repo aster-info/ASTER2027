@@ -79,7 +79,7 @@
             --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -705,48 +705,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .email-sent-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: auto;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            color: #047857;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .email-pending-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: auto;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: #fff7ed;
-            border: 1px solid #fdba74;
-            color: #c2410c;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        body.dark-mode .email-sent-badge {
-            background: rgba(16, 185, 129, 0.16);
-            border-color: rgba(52, 211, 153, 0.35);
-            color: #6ee7b7;
-        }
-
-        body.dark-mode .email-pending-badge {
-            background: rgba(249, 115, 22, 0.16);
-            border-color: rgba(251, 146, 60, 0.35);
-            color: #fdba74;
-        }
-
         .kpi-modal-footer {
             padding: 14px 24px;
             border-top: 1px solid var(--border);
@@ -950,6 +908,8 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
         const THEME_STORAGE_KEY = "aster_dashboard_theme";
 
+        const ACTIONS_CANDIDATES = ["dashboard", "getDashboard", "list", "getMembers", ""];
+        let actionIndex = 0;
         let allMembers = [];
         let displayedMembers = [];
         let charts = {};
@@ -1042,6 +1002,7 @@
                 m.presences,
                 m.participations,
                 m.joursParticipation,
+                m.jours,
                 m.dates
             ];
 
@@ -1060,28 +1021,63 @@
             return fallback.length ? [fallback[0]] : [];
         }
 
-        function chargerDonnees() {
+        function chargerDonnees(resetIndex = true) {
+            if (resetIndex) actionIndex = 0;
+            const actionCourante = ACTIONS_CANDIDATES[actionIndex] || "";
             document.getElementById("last-update").textContent = "Mise à jour...";
+
             const oldScript = document.getElementById("jsonp-dashboard-script");
             if (oldScript) oldScript.remove();
 
+            const queryAction = actionCourante ? `action=${encodeURIComponent(actionCourante)}&` : "";
             const script = document.createElement("script");
             script.id = "jsonp-dashboard-script";
-            script.src = `${WEB_APP_URL}?action=dashboard&callback=traiterDonneesDashboard&_t=${Date.now()}`;
+            script.src = `${WEB_APP_URL}?${queryAction}callback=traiterDonneesDashboard&_t=${Date.now()}`;
             script.onerror = () => {
                 document.getElementById("last-update").textContent = "Erreur de chargement";
             };
             document.body.appendChild(script);
         }
 
+        function extraireListeMembres(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            if (Array.isArray(data.members)) return data.members;
+            if (Array.isArray(data.data)) return data.data;
+            if (Array.isArray(data.participants)) return data.participants;
+            if (Array.isArray(data.rows)) return data.rows;
+            if (Array.isArray(data.items)) return data.items;
+            return [];
+        }
+
         function traiterDonneesDashboard(data) {
-            if (!data || !Array.isArray(data.members)) {
-                document.getElementById("last-update").textContent = "Données indisponibles";
+            console.log("Réponse JSONP Dashboard :", data);
+            const liste = extraireListeMembres(data);
+
+            // Si l'action essayée n'est pas reconnue par le script Apps Script, tente la suivante
+            if ((!Array.isArray(liste) || liste.length === 0) && actionIndex + 1 < ACTIONS_CANDIDATES.length) {
+                actionIndex++;
+                chargerDonnees(false);
                 return;
             }
 
-            allMembers = data.members.map(m => ({
+            if (!Array.isArray(liste) || liste.length === 0) {
+                const detail = data && data.message ? ` (${data.message})` : "";
+                document.getElementById("last-update").textContent = `Données indisponibles${detail}`;
+                document.getElementById("dashboard-table-body").innerHTML =
+                    `<tr><td colspan="4" class="empty-msg">Aucune donnée reçue du Web App${detail}.</td></tr>`;
+                return;
+            }
+
+            allMembers = liste.map(m => ({
                 ...m,
+                name: m.name || m.nom || m.fullName || ((m.prenom || "") + " " + (m.nomFamille || "")).trim(),
+                memberId: m.memberId || m.id || m.matricule || m.code || "",
+                status: m.status || m.statut || m.etat || "Inscrit",
+                institution: m.institution || m.etablissement || m.hopital || m.organisation || "",
+                titre: m.titre || m.fonction || m.role || "",
+                regime: m.regime || m.regimeAlimentaire || m.diet || "",
+                photo: m.photo || m.photoUrl || m.avatar || "",
                 _datesParticipation: extraireDatesParticipation(m)
             }));
 
@@ -1406,7 +1402,7 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             appliquerThemeInitial();
-            chargerDonnees();
+            chargerDonnees(true);
         });
     </script>
 </body>
