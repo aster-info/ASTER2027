@@ -817,4 +817,597 @@
                 <div class="kpi-badge">REG</div>
             </div>
 
-            <div class="kpi-card
+            <div class="kpi-card kpi-total" onclick="ouvrirModaleKPI('TOUS')">
+                <div>
+                    <div class="kpi-label">Total Inscrits</div>
+                    <div id="kpi-total" class="kpi-value">0</div>
+                    <div id="kpi-inst-count" class="kpi-sub">0 institution(s)</div>
+                </div>
+                <div class="kpi-badge">ALL</div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 5 (HTML) : GRAPHIQUES ANALYTIQUES
+             ================================================================= -->
+        <section class="charts-grid" aria-label="Graphiques statistiques">
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">📊 Statuts des participants</h2>
+                    <span class="card-tag">Présents / Sortis / Inscrits</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartStatuts"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🍽️ Régimes alimentaires</h2>
+                    <span class="card-tag">Par catégorie</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartRegimes"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏅 Titres des membres</h2>
+                    <span class="card-tag">Répartition</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartTitres"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏥 Institutions (Top)</h2>
+                    <span class="card-tag">Effectifs</span>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chartInstitutions"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <!-- =================================================================
+             RUBRIQUE 6 (HTML) : SYNTHÈSE INSTITUTIONS & LISTE PARTICIPANTS
+             ================================================================= -->
+        <section class="bottom-grid">
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">🏢 Toutes les institutions</h2>
+                    <span id="badge-nb-inst" class="card-tag">0</span>
+                </div>
+                <div id="institutions-list" class="inst-list">
+                    <div class="empty-msg">Chargement...</div>
+                </div>
+            </article>
+
+            <article class="panel-card">
+                <div class="card-header">
+                    <h2 class="card-title">👥 Participants & Dates de participation</h2>
+                    <span id="badge-nb-filtered" class="card-tag">0 affiché(s)</span>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" id="filter-search" class="search-input" placeholder="Rechercher nom, titre, institution, régime ou date...">
+                    <select id="filter-statut" class="select-filter">
+                        <option value="">Tous statuts</option>
+                        <option value="Présent">Présent</option>
+                        <option value="Sorti">Sorti</option>
+                        <option value="Inscrit">Inscrit</option>
+                    </select>
+                </div>
+
+                <div class="members-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Membre</th>
+                                <th>Institution</th>
+                                <th>Dates de participation</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <tr><td colspan="4" class="empty-msg">Chargement des données...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </div>
+
+    <!-- =====================================================================
+         RUBRIQUE 7 (HTML) : FENÊTRE MODALE DÉTAILS KPI & PARTICIPANT
+         ===================================================================== -->
+    <div id="kpi-modal" class="kpi-modal-backdrop" onclick="if(event.target === this) fermerModaleKPI()">
+        <div class="kpi-modal-card">
+            <div class="kpi-modal-header">
+                <div class="kpi-modal-title-wrap">
+                    <h2 id="kpi-modal-title" class="kpi-modal-title">Détails</h2>
+                    <span id="kpi-modal-count" class="kpi-modal-count">0 membre(s)</span>
+                </div>
+                <button type="button" class="kpi-modal-close" onclick="fermerModaleKPI()" aria-label="Fermer">✕</button>
+            </div>
+
+            <div id="kpi-modal-body" class="kpi-modal-body"></div>
+
+            <div class="kpi-modal-footer">
+                <button type="button" class="btn btn-primary" onclick="fermerModaleKPI()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME, DATES & ÉTAT GLOBAL
+           ===================================================================== */
+        const LOGO_ASTER_URL = "./logo.png";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
+        const THEME_STORAGE_KEY = "aster_dashboard_theme";
+
+        let allMembers = [];
+        let displayedMembers = [];
+        let charts = {};
+
+        const PALETTE = [
+            "#0284c7", "#10b981", "#f59e0b", "#8b5cf6",
+            "#ec4899", "#14b8a6", "#f97316", "#6366f1",
+            "#64748b", "#84cc16"
+        ];
+
+        function estModeSombre() {
+            return document.body.classList.contains("dark-mode");
+        }
+
+        function mettreAJourBoutonTheme() {
+            const dark = estModeSombre();
+            document.getElementById("theme-icon").textContent = dark ? "☀️" : "🌙";
+            document.getElementById("theme-label").textContent = dark ? "Mode clair" : "Mode sombre";
+        }
+
+        function appliquerThemeInitial() {
+            const saved = localStorage.getItem(THEME_STORAGE_KEY);
+            if (saved === "dark") {
+                document.body.classList.add("dark-mode");
+            } else {
+                document.body.classList.remove("dark-mode");
+            }
+            mettreAJourBoutonTheme();
+        }
+
+        function basculerTheme() {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem(THEME_STORAGE_KEY, estModeSombre() ? "dark" : "light");
+            mettreAJourBoutonTheme();
+            renderCharts();
+        }
+
+        function getChartTheme() {
+            const dark = estModeSombre();
+            return {
+                textColor: dark ? "#e2e8f0" : "#334155",
+                gridColor: dark ? "#334155" : "#f1f5f9",
+                borderColor: dark ? "#1e293b" : "#ffffff"
+            };
+        }
+
+        function resoudrePhoto(url) {
+            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
+            const propre = url.trim();
+            if (!propre || propre.toLowerCase().includes("attente")) return LOGO_ASTER_URL;
+            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
+            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (matchSlash && matchSlash[1]) return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
+            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (matchQuery && matchQuery[1]) return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
+            return propre;
+        }
+
+        function escapeHtml(str) {
+            return String(str || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function normaliserDateLisible(val) {
+            if (!val) return "";
+            if (Array.isArray(val)) {
+                return val.map(normaliserDateLisible).filter(Boolean).join(", ");
+            }
+            const brute = String(val).trim();
+            if (!brute) return "";
+            const d = new Date(brute);
+            if (!isNaN(d.getTime()) && /\d{4}-\d{2}-\d{2}|T\d{2}:\d{2}|GMT|UTC/i.test(brute)) {
+                const aUneHeure = /T\d{2}:\d{2}|\d{1,2}:\d{2}/.test(brute);
+                return aUneHeure
+                    ? d.toLocaleString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : d.toLocaleDateString("fr-BE", { day: "2-digit", month: "2-digit", year: "numeric" });
+            }
+            return brute;
+        }
+
+        function extraireDatesParticipation(m) {
+            const candidats = [
+                m.datesParticipation,
+                m.participationDates,
+                m.datesPresence,
+                m.presences,
+                m.participations,
+                m.joursParticipation,
+                m.dates
+            ];
+
+            for (const c of candidats) {
+                if (Array.isArray(c) && c.length > 0) {
+                    return c.map(normaliserDateLisible).filter(Boolean);
+                }
+                if (typeof c === "string" && c.trim()) {
+                    return c.split(/[,;|]+/).map(s => normaliserDateLisible(s)).filter(Boolean);
+                }
+            }
+
+            const fallback = [m.dateEntree, m.entryDate, m.dateInscription, m.timestamp]
+                .map(normaliserDateLisible)
+                .filter(Boolean);
+            return fallback.length ? [fallback[0]] : [];
+        }
+
+        function chargerDonnees() {
+            document.getElementById("last-update").textContent = "Mise à jour...";
+            const oldScript = document.getElementById("jsonp-dashboard-script");
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement("script");
+            script.id = "jsonp-dashboard-script";
+            script.src = `${WEB_APP_URL}?action=dashboard&callback=traiterDonneesDashboard&_t=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById("last-update").textContent = "Erreur de chargement";
+            };
+            document.body.appendChild(script);
+        }
+
+        function traiterDonneesDashboard(data) {
+            if (!data || !Array.isArray(data.members)) {
+                document.getElementById("last-update").textContent = "Données indisponibles";
+                return;
+            }
+
+            allMembers = data.members.map(m => ({
+                ...m,
+                _datesParticipation: extraireDatesParticipation(m)
+            }));
+
+            const now = new Date();
+            document.getElementById("last-update").textContent =
+                `MAJ ${now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+
+            renderKPIs();
+            renderCharts();
+            renderInstitutions();
+            appliquerFiltresTableau();
+        }
+
+        function renderKPIs() {
+            const total = allMembers.length;
+            const presents = allMembers.filter(m => m.status === "Présent").length;
+            const sortis = allMembers.filter(m => m.status === "Sorti").length;
+            const inscrits = allMembers.filter(m => !m.status || m.status === "Inscrit").length;
+
+            const pctIn = total ? Math.round((presents / total) * 100) : 0;
+            const pctOut = total ? Math.round((sortis / total) * 100) : 0;
+
+            const institutions = new Set(
+                allMembers.map(m => (m.institution || "").trim()).filter(Boolean)
+            );
+
+            document.getElementById("kpi-present").textContent = presents;
+            document.getElementById("kpi-present-pct").textContent = `${pctIn} % des inscrits`;
+
+            document.getElementById("kpi-sorti").textContent = sortis;
+            document.getElementById("kpi-sorti-pct").textContent = `${pctOut} % des inscrits`;
+
+            document.getElementById("kpi-inscrit").textContent = inscrits;
+            document.getElementById("kpi-total").textContent = total;
+            document.getElementById("kpi-inst-count").textContent = `${institutions.size} institution(s)`;
+        }
+
+        function compterPropriete(liste, getter, libelleVide = "Non précisé") {
+            const map = {};
+            liste.forEach(item => {
+                const raw = (getter(item) || "").toString().trim();
+                const cle = raw || libelleVide;
+                map[cle] = (map[cle] || 0) + 1;
+            });
+            return Object.entries(map).sort((a, b) => b[1] - a[1]);
+        }
+
+        function detruireChart(nom) {
+            if (charts[nom]) {
+                charts[nom].destroy();
+                charts[nom] = null;
+            }
+        }
+
+        function renderCharts() {
+            if (!allMembers.length) return;
+            const theme = getChartTheme();
+
+            detruireChart("statuts");
+            const presents = allMembers.filter(m => m.status === "Présent").length;
+            const sortis = allMembers.filter(m => m.status === "Sorti").length;
+            const inscrits = allMembers.filter(m => !m.status || m.status === "Inscrit").length;
+
+            charts.statuts = new Chart(document.getElementById("chartStatuts"), {
+                type: "doughnut",
+                data: {
+                    labels: ["Présents", "Sortis", "Inscrits"],
+                    datasets: [{
+                        data: [presents, sortis, inscrits],
+                        backgroundColor: ["#10b981", "#ef4444", "#29b6f6"],
+                        borderColor: theme.borderColor,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { color: theme.textColor, padding: 14, font: { weight: "bold" } } }
+                    }
+                }
+            });
+
+            detruireChart("regimes");
+            const regimesData = compterPropriete(allMembers, m => m.regime, "Standard / Non précisé");
+            charts.regimes = new Chart(document.getElementById("chartRegimes"), {
+                type: "pie",
+                data: {
+                    labels: regimesData.map(r => r[0]),
+                    datasets: [{
+                        data: regimesData.map(r => r[1]),
+                        backgroundColor: PALETTE,
+                        borderColor: theme.borderColor,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { color: theme.textColor, padding: 12, font: { weight: "600" } } }
+                    }
+                }
+            });
+
+            detruireChart("titres");
+            const titresData = compterPropriete(allMembers, m => m.titre, "Non précisé");
+            charts.titres = new Chart(document.getElementById("chartTitres"), {
+                type: "bar",
+                data: {
+                    labels: titresData.map(t => t[0]),
+                    datasets: [{
+                        label: "Membres",
+                        data: titresData.map(t => t[1]),
+                        backgroundColor: "#0284c7",
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: theme.textColor }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: theme.textColor }, grid: { color: theme.gridColor } }
+                    }
+                }
+            });
+
+            detruireChart("institutions");
+            const instData = compterPropriete(allMembers, m => m.institution, "Non précisée").slice(0, 8);
+            charts.institutions = new Chart(document.getElementById("chartInstitutions"), {
+                type: "bar",
+                data: {
+                    labels: instData.map(i => i[0].length > 26 ? i[0].slice(0, 26) + "…" : i[0]),
+                    datasets: [{
+                        label: "Participants",
+                        data: instData.map(i => i[1]),
+                        backgroundColor: "#10b981",
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { stepSize: 1, color: theme.textColor }, grid: { color: theme.gridColor } },
+                        y: { ticks: { color: theme.textColor, font: { weight: "600" } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderInstitutions() {
+            const listEl = document.getElementById("institutions-list");
+            const instEntries = compterPropriete(allMembers, m => m.institution, "Non précisée");
+
+            document.getElementById("badge-nb-inst").textContent = instEntries.length;
+
+            if (!instEntries.length) {
+                listEl.innerHTML = `<div class="empty-msg">Aucune institution trouvée.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = instEntries.map(([nom, count]) => `
+                <div class="inst-item" onclick="filtrerParInstitution('${escapeHtml(nom.replace(/'/g, "\\'"))}')">
+                    <span class="inst-name" title="${escapeHtml(nom)}">${escapeHtml(nom)}</span>
+                    <span class="inst-count">${count}</span>
+                </div>
+            `).join("");
+        }
+
+        function filtrerParInstitution(nomInst) {
+            const searchInput = document.getElementById("filter-search");
+            searchInput.value = nomInst === "Non précisée" ? "" : nomInst;
+            appliquerFiltresTableau();
+            document.getElementById("dashboard-table-body").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        function appliquerFiltresTableau() {
+            const q = (document.getElementById("filter-search").value || "").trim().toLowerCase();
+            const statutFiltre = document.getElementById("filter-statut").value;
+
+            displayedMembers = allMembers.filter(m => {
+                const statutMembre = m.status || "Inscrit";
+                if (statutFiltre && statutMembre !== statutFiltre) return false;
+
+                if (!q) return true;
+                const datesTexte = (m._datesParticipation || []).join(" ").toLowerCase();
+                return (
+                    (m.name || "").toLowerCase().includes(q) ||
+                    (m.titre || "").toLowerCase().includes(q) ||
+                    (m.institution || "").toLowerCase().includes(q) ||
+                    (m.regime || "").toLowerCase().includes(q) ||
+                    (m.memberId || "").toLowerCase().includes(q) ||
+                    datesTexte.includes(q)
+                );
+            });
+
+            document.getElementById("badge-nb-filtered").textContent = `${displayedMembers.length} affiché(s)`;
+            renderTableau();
+        }
+
+        function badgeStatutHTML(statut) {
+            const s = statut || "Inscrit";
+            if (s === "Présent") return `<span class="status-badge status-present">Présent</span>`;
+            if (s === "Sorti") return `<span class="status-badge status-sorti">Sorti</span>`;
+            return `<span class="status-badge status-inscrit">Inscrit</span>`;
+        }
+
+        function renderDatesChips(dates) {
+            if (!dates || !dates.length) {
+                return `<span style="color:var(--muted);font-size:12px;">Aucune date</span>`;
+            }
+            return `<div class="dates-chip-wrap">${
+                dates.map(d => `<span class="date-chip">📅 ${escapeHtml(d)}</span>`).join("")
+            }</div>`;
+        }
+
+        function renderTableau() {
+            const tbody = document.getElementById("dashboard-table-body");
+            if (!displayedMembers.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = displayedMembers.map((m, idx) => `
+                <tr class="clickable-row" onclick="ouvrirModaleMembre(${idx})">
+                    <td>
+                        <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="avatar-sm"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
+                        <strong>${escapeHtml(m.name || "—")}</strong>
+                        ${m.titre ? `<div style="font-size:11.5px;color:var(--muted);padding-left:46px;">${escapeHtml(m.titre)}</div>` : ""}
+                    </td>
+                    <td>${escapeHtml(m.institution || "—")}</td>
+                    <td>${renderDatesChips(m._datesParticipation)}</td>
+                    <td>${badgeStatutHTML(m.status)}</td>
+                </tr>
+            `).join("");
+        }
+
+        function construireCarteMembreModale(m) {
+            const dates = m._datesParticipation || [];
+            const datesLigne = dates.length ? dates.join(" • ") : "Aucune date enregistrée";
+            const statut = m.status || "Inscrit";
+
+            return `
+                <div class="modal-member-item">
+                    <div class="modal-member-left">
+                        <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="modal-member-avatar"
+                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
+                        <div>
+                            <div class="modal-member-name">${escapeHtml(m.name || "Membre")}</div>
+                            <div class="modal-member-lines">
+                                <div><span class="modal-field-label">ID :</span> ${escapeHtml(m.memberId || "—")}</div>
+                                <div><span class="modal-field-label">Titre :</span> ${escapeHtml(m.titre || "—")}</div>
+                                <div><span class="modal-field-label">Institution :</span> ${escapeHtml(m.institution || "—")}</div>
+                                <div><span class="modal-field-label">Régime :</span> ${escapeHtml(m.regime || "Standard")}</div>
+                                <div><span class="modal-field-label">Dates de participation :</span> <strong>${escapeHtml(datesLigne)}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-member-right">
+                        <div class="modal-member-top-status">
+                            ${badgeStatutHTML(statut)}
+                            ${m.heureEntree ? `<div class="modal-member-time">Entrée : ${escapeHtml(m.heureEntree)}</div>` : ""}
+                            ${m.heureSortie ? `<div class="modal-member-time">Sortie : ${escapeHtml(m.heureSortie)}</div>` : ""}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function ouvrirModaleKPI(categorie) {
+            let liste = [];
+            let titre = "Participants";
+
+            if (categorie === "Présent") {
+                liste = allMembers.filter(m => m.status === "Présent");
+                titre = "Membres Présents";
+            } else if (categorie === "Sorti") {
+                liste = allMembers.filter(m => m.status === "Sorti");
+                titre = "Membres Sortis";
+            } else if (categorie === "Inscrit") {
+                liste = allMembers.filter(m => !m.status || m.status === "Inscrit");
+                titre = "Inscrits en attente";
+            } else {
+                liste = allMembers.slice();
+                titre = "Tous les membres inscrits";
+            }
+
+            document.getElementById("kpi-modal-title").textContent = titre;
+            document.getElementById("kpi-modal-count").textContent = `${liste.length} membre(s)`;
+            document.getElementById("kpi-modal-body").innerHTML = liste.length
+                ? liste.map(construireCarteMembreModale).join("")
+                : `<div class="empty-msg">Aucun membre dans cette catégorie.</div>`;
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function ouvrirModaleMembre(index) {
+            const m = displayedMembers[index];
+            if (!m) return;
+
+            document.getElementById("kpi-modal-title").textContent = m.name || "Détails du membre";
+            document.getElementById("kpi-modal-count").textContent = m.memberId || "Fiche";
+            document.getElementById("kpi-modal-body").innerHTML = construireCarteMembreModale(m);
+            document.getElementById("kpi-modal").classList.add("active");
+        }
+
+        function fermerModaleKPI() {
+            document.getElementById("kpi-modal").classList.remove("active");
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") fermerModaleKPI();
+        });
+
+        document.getElementById("filter-search").addEventListener("input", appliquerFiltresTableau);
+        document.getElementById("filter-statut").addEventListener("change", appliquerFiltresTableau);
+
+        window.addEventListener("DOMContentLoaded", () => {
+            appliquerThemeInitial();
+            chargerDonnees();
+        });
+    </script>
+</body>
+</html>
