@@ -100,7 +100,7 @@
         }
 
         /* =====================================================================
-           RUBRIQUE 3 : EN-TÊTE, BARRE D'ACTIONS ET BOUTON THÈME EN BAS À DROITE
+           RUBRIQUE 3 : EN-TÊTE, BARRE D'ACTIONS ET BOUTONS EN BAS À DROITE
            ===================================================================== */
         .top-header {
             position: relative;
@@ -208,10 +208,17 @@
         }
         .btn-ghost:hover { background: var(--ghost-hover); }
 
-        .theme-toggle-btn {
+        .header-corner-controls {
             position: absolute;
             right: 20px;
             bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle-btn,
+        .mobile-toggle-btn {
             border: 1px solid var(--border);
             background: var(--card-soft);
             color: var(--text);
@@ -227,9 +234,16 @@
             transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
         }
 
-        .theme-toggle-btn:hover {
+        .theme-toggle-btn:hover,
+        .mobile-toggle-btn:hover {
             transform: translateY(-1px);
             background: var(--ghost-hover);
+        }
+
+        body.mobile-mode .mobile-toggle-btn {
+            background: var(--blue-soft);
+            color: var(--blue-text);
+            border-color: var(--primary);
         }
 
         /* =====================================================================
@@ -546,7 +560,7 @@
         .kpi-modal-card {
             background: var(--card);
             width: 100%;
-            max-width: 720px;
+            max-width: 700px;
             max-height: 85vh;
             border-radius: 24px;
             box-shadow: 0 24px 55px rgba(0, 0, 0, 0.35);
@@ -652,12 +666,6 @@
             margin-bottom: 6px;
         }
 
-        .modal-member-id {
-            color: var(--muted);
-            font-weight: 600;
-            font-size: 13px;
-        }
-
         .modal-member-lines {
             display: flex;
             flex-direction: column;
@@ -740,12 +748,87 @@
             display: flex;
             justify-content: flex-end;
         }
+
+        /* =====================================================================
+           RUBRIQUE 9 : MODE MOBILE (ACTIVABLE VIA BOUTON OU PETIT ÉCRAN)
+           ===================================================================== */
+        body.mobile-mode {
+            padding: 14px 10px 36px;
+        }
+
+        body.mobile-mode .container {
+            max-width: 480px;
+        }
+
+        body.mobile-mode .top-header {
+            padding: 16px 16px 52px;
+            border-radius: 18px;
+            gap: 14px;
+        }
+
+        body.mobile-mode .header-logo {
+            width: 54px;
+            height: 54px;
+        }
+
+        body.mobile-mode .brand-title {
+            font-size: 21px;
+        }
+
+        body.mobile-mode .header-actions {
+            width: 100%;
+        }
+
+        body.mobile-mode .header-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 9px 12px;
+            font-size: 13px;
+        }
+
+        body.mobile-mode .kpi-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        body.mobile-mode .charts-grid,
+        body.mobile-mode .bottom-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        body.mobile-mode .chart-card,
+        body.mobile-mode .panel-card {
+            padding: 16px;
+            border-radius: 18px;
+            min-height: 300px;
+        }
+
+        body.mobile-mode .members-table-wrap {
+            overflow-x: auto;
+        }
+
+        body.mobile-mode table {
+            min-width: 520px;
+            font-size: 12.5px;
+        }
+
+        body.mobile-mode .modal-member-item {
+            flex-direction: column;
+        }
+
+        body.mobile-mode .modal-member-right {
+            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- =================================================================
-             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD + BOUTON THÈME EN BAS À DROITE
+             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD + BOUTONS EN BAS À DROITE
              ================================================================= -->
         <header class="top-header">
             <div class="brand">
@@ -766,10 +849,16 @@
                 <a href="./admin4.html" class="btn btn-primary">🛡️ Vue Admin</a>
             </div>
 
-            <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="basculerTheme()" aria-label="Basculer mode sombre ou clair">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-label">Mode sombre</span>
-            </button>
+            <div class="header-corner-controls">
+                <button type="button" id="mobile-toggle-btn" class="mobile-toggle-btn" onclick="basculerMobile()" aria-label="Basculer version mobile ou bureau">
+                    <span id="mobile-icon">📱</span>
+                    <span id="mobile-label">Mobile</span>
+                </button>
+                <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="basculerTheme()" aria-label="Basculer mode sombre ou clair">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-label">Mode sombre</span>
+                </button>
+            </div>
         </header>
 
         <!-- =================================================================
@@ -879,7 +968,7 @@
                 </div>
 
                 <div class="filter-bar">
-                    <input type="text" id="filter-search" class="search-input" placeholder="Rechercher nom, titre, institution, régime ou date...">
+                    <input type="text" id="filter-search" class="search-input" placeholder="Rechercher nom, titre, institution ou régime...">
                     <select id="filter-statut" class="select-filter">
                         <option value="">Tous statuts</option>
                         <option value="Présent">Présent</option>
@@ -931,11 +1020,12 @@
 
     <script>
         /* =====================================================================
-           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME ET ÉTAT GLOBAL
+           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME, MODE MOBILE & ÉTAT GLOBAL
            ===================================================================== */
         const LOGO_ASTER_URL = "./logo.png";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
         const THEME_STORAGE_KEY = "aster_dashboard_theme";
+        const MOBILE_STORAGE_KEY = "aster_dashboard_mobile";
 
         let allMembers = [];
         let displayedMembers = [];
@@ -971,422 +1061,40 @@
             document.body.classList.toggle("dark-mode");
             localStorage.setItem(THEME_STORAGE_KEY, estModeSombre() ? "dark" : "light");
             mettreAJourBoutonTheme();
-            renderCharts();
+            if (typeof renderCharts === "function") renderCharts();
         }
 
-        function getChartTheme() {
-            const dark = estModeSombre();
-            return {
-                textColor: dark ? "#e2e8f0" : "#334155",
-                gridColor: dark ? "#334155" : "#f1f5f9",
-                borderColor: dark ? "#1e293b" : "#ffffff"
-            };
+        function estModeMobile() {
+            return document.body.classList.contains("mobile-mode");
         }
 
-        function resoudrePhoto(url) {
-            if (!url || typeof url !== "string") return LOGO_ASTER_URL;
-            const propre = url.trim();
-            if (!propre || propre.toLowerCase().includes("attente")) return LOGO_ASTER_URL;
-            if (propre.includes("lh3.googleusercontent.com/d/")) return propre;
-            const matchSlash = propre.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (matchSlash && matchSlash[1]) return "https://lh3.googleusercontent.com/d/" + matchSlash[1];
-            const matchQuery = propre.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (matchQuery && matchQuery[1]) return "https://lh3.googleusercontent.com/d/" + matchQuery[1];
-            return propre;
+        function mettreAJourBoutonMobile() {
+            const mobile = estModeMobile();
+            document.getElementById("mobile-icon").textContent = mobile ? "🖥️" : "📱";
+            document.getElementById("mobile-label").textContent = mobile ? "Bureau" : "Mobile";
         }
 
-        function escapeHtml(str) {
-            return String(str || "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#39;");
-        }
-
-        // Récupère les dates cochées dans "Participation à la journée du :" (ex: "Vendredi 9 avril 2027, Samedi 10 avril 2027")
-        function extraireDatesParticipation(m) {
-            const candidats = [
-                m["Participation à la journée du :"],
-                m["Participation à la journée du"],
-                m.participationJournee,
-                m.participation,
-                m.datesParticipation,
-                m.participationDates,
-                m.datesPresence,
-                m.presences,
-                m.participations,
-                m.joursParticipation,
-                m.dates
-            ];
-
-            for (const c of candidats) {
-                if (Array.isArray(c) && c.length > 0) {
-                    return c.map(x => String(x || "").trim()).filter(Boolean);
-                }
-                if (typeof c === "string" && c.trim()) {
-                    return c.split(",").map(s => s.trim()).filter(Boolean);
-                }
-            }
-            return [];
-        }
-
-        function chargerDonnees() {
-            document.getElementById("last-update").textContent = "Mise à jour...";
-            const oldScript = document.getElementById("jsonp-dashboard-script");
-            if (oldScript) oldScript.remove();
-
-            const script = document.createElement("script");
-            script.id = "jsonp-dashboard-script";
-            script.src = `${WEB_APP_URL}?action=dashboard&callback=traiterDonneesDashboard&_t=${Date.now()}`;
-            script.onerror = () => {
-                document.getElementById("last-update").textContent = "Erreur de chargement";
-            };
-            document.body.appendChild(script);
-        }
-
-        function traiterDonneesDashboard(data) {
-            const liste = Array.isArray(data) ? data : (data && (data.members || data.data || data.participants || data.rows || data.items));
-            if (!Array.isArray(liste)) {
-                document.getElementById("last-update").textContent = "Données indisponibles";
-                return;
-            }
-
-            allMembers = liste.map(m => ({
-                ...m,
-                name: m.name || m.nom || m.fullName || ((m.prenom || "") + " " + (m.nomFamille || "")).trim(),
-                memberId: m.memberId || m.id || m.matricule || "",
-                status: m.status || m.statut || "Inscrit",
-                institution: m.institution || m.etablissement || "",
-                titre: m.titre || m.fonction || "",
-                regime: m.regime || m.regimeAlimentaire || "Aucun",
-                email: m.email || m.courriel || m.mail || "",
-                photo: m.photo || m.photoUrl || "",
-                _datesParticipation: extraireDatesParticipation(m)
-            }));
-
-            const now = new Date();
-            document.getElementById("last-update").textContent =
-                `MAJ ${now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
-
-            renderKPIs();
-            renderCharts();
-            renderInstitutions();
-            appliquerFiltresTableau();
-        }
-
-        function renderKPIs() {
-            const total = allMembers.length;
-            const presents = allMembers.filter(m => m.status === "Présent").length;
-            const sortis = allMembers.filter(m => m.status === "Sorti").length;
-            const inscrits = allMembers.filter(m => !m.status || m.status === "Inscrit").length;
-
-            const pctIn = total ? Math.round((presents / total) * 100) : 0;
-            const pctOut = total ? Math.round((sortis / total) * 100) : 0;
-
-            const institutions = new Set(
-                allMembers.map(m => (m.institution || "").trim()).filter(Boolean)
-            );
-
-            document.getElementById("kpi-present").textContent = presents;
-            document.getElementById("kpi-present-pct").textContent = `${pctIn} % des inscrits`;
-
-            document.getElementById("kpi-sorti").textContent = sortis;
-            document.getElementById("kpi-sorti-pct").textContent = `${pctOut} % des inscrits`;
-
-            document.getElementById("kpi-inscrit").textContent = inscrits;
-            document.getElementById("kpi-total").textContent = total;
-            document.getElementById("kpi-inst-count").textContent = `${institutions.size} institution(s)`;
-        }
-
-        function compterPropriete(liste, getter, libelleVide = "Non précisé") {
-            const map = {};
-            liste.forEach(item => {
-                const raw = (getter(item) || "").toString().trim();
-                const cle = raw || libelleVide;
-                map[cle] = (map[cle] || 0) + 1;
-            });
-            return Object.entries(map).sort((a, b) => b[1] - a[1]);
-        }
-
-        function detruireChart(nom) {
-            if (charts[nom]) {
-                charts[nom].destroy();
-                charts[nom] = null;
-            }
-        }
-
-        function renderCharts() {
-            if (!allMembers.length) return;
-            const theme = getChartTheme();
-
-            detruireChart("statuts");
-            const presents = allMembers.filter(m => m.status === "Présent").length;
-            const sortis = allMembers.filter(m => m.status === "Sorti").length;
-            const inscrits = allMembers.filter(m => !m.status || m.status === "Inscrit").length;
-
-            charts.statuts = new Chart(document.getElementById("chartStatuts"), {
-                type: "doughnut",
-                data: {
-                    labels: ["Présents", "Sortis", "Inscrits"],
-                    datasets: [{
-                        data: [presents, sortis, inscrits],
-                        backgroundColor: ["#10b981", "#ef4444", "#29b6f6"],
-                        borderColor: theme.borderColor,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: "bottom", labels: { color: theme.textColor, padding: 14, font: { weight: "bold" } } }
-                    }
-                }
-            });
-
-            detruireChart("regimes");
-            const regimesData = compterPropriete(allMembers, m => m.regime, "Aucun");
-            charts.regimes = new Chart(document.getElementById("chartRegimes"), {
-                type: "pie",
-                data: {
-                    labels: regimesData.map(r => r[0]),
-                    datasets: [{
-                        data: regimesData.map(r => r[1]),
-                        backgroundColor: PALETTE,
-                        borderColor: theme.borderColor,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: "bottom", labels: { color: theme.textColor, padding: 12, font: { weight: "600" } } }
-                    }
-                }
-            });
-
-            detruireChart("titres");
-            const titresData = compterPropriete(allMembers, m => m.titre, "Non précisé");
-            charts.titres = new Chart(document.getElementById("chartTitres"), {
-                type: "bar",
-                data: {
-                    labels: titresData.map(t => t[0]),
-                    datasets: [{
-                        label: "Membres",
-                        data: titresData.map(t => t[1]),
-                        backgroundColor: "#0284c7",
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: theme.textColor }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { stepSize: 1, color: theme.textColor }, grid: { color: theme.gridColor } }
-                    }
-                }
-            });
-
-            detruireChart("institutions");
-            const instData = compterPropriete(allMembers, m => m.institution, "Non précisée").slice(0, 8);
-            charts.institutions = new Chart(document.getElementById("chartInstitutions"), {
-                type: "bar",
-                data: {
-                    labels: instData.map(i => i[0].length > 26 ? i[0].slice(0, 26) + "…" : i[0]),
-                    datasets: [{
-                        label: "Participants",
-                        data: instData.map(i => i[1]),
-                        backgroundColor: "#10b981",
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    indexAxis: "y",
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, ticks: { stepSize: 1, color: theme.textColor }, grid: { color: theme.gridColor } },
-                        y: { ticks: { color: theme.textColor, font: { weight: "600" } }, grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function renderInstitutions() {
-            const listEl = document.getElementById("institutions-list");
-            const instEntries = compterPropriete(allMembers, m => m.institution, "Non précisée");
-
-            document.getElementById("badge-nb-inst").textContent = instEntries.length;
-
-            if (!instEntries.length) {
-                listEl.innerHTML = `<div class="empty-msg">Aucune institution trouvée.</div>`;
-                return;
-            }
-
-            listEl.innerHTML = instEntries.map(([nom, count]) => `
-                <div class="inst-item" onclick="filtrerParInstitution('${escapeHtml(nom.replace(/'/g, "\\'"))}')">
-                    <span class="inst-name" title="${escapeHtml(nom)}">${escapeHtml(nom)}</span>
-                    <span class="inst-count">${count}</span>
-                </div>
-            `).join("");
-        }
-
-        function filtrerParInstitution(nomInst) {
-            const searchInput = document.getElementById("filter-search");
-            searchInput.value = nomInst === "Non précisée" ? "" : nomInst;
-            appliquerFiltresTableau();
-            document.getElementById("dashboard-table-body").scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-
-        function appliquerFiltresTableau() {
-            const q = (document.getElementById("filter-search").value || "").trim().toLowerCase();
-            const statutFiltre = document.getElementById("filter-statut").value;
-
-            displayedMembers = allMembers.filter(m => {
-                const statutMembre = m.status || "Inscrit";
-                if (statutFiltre && statutMembre !== statutFiltre) return false;
-
-                if (!q) return true;
-                const datesTexte = (m._datesParticipation || []).join(" ").toLowerCase();
-                return (
-                    (m.name || "").toLowerCase().includes(q) ||
-                    (m.titre || "").toLowerCase().includes(q) ||
-                    (m.institution || "").toLowerCase().includes(q) ||
-                    (m.regime || "").toLowerCase().includes(q) ||
-                    datesTexte.includes(q)
-                );
-            });
-
-            document.getElementById("badge-nb-filtered").textContent = `${displayedMembers.length} affiché(s)`;
-            renderTableau();
-        }
-
-        function badgeStatutHTML(statut) {
-            const s = statut || "Inscrit";
-            if (s === "Présent") return `<span class="status-badge status-present">Présent</span>`;
-            if (s === "Sorti") return `<span class="status-badge status-sorti">Sorti</span>`;
-            return `<span class="status-badge status-inscrit">Inscrit</span>`;
-        }
-
-        function renderTableau() {
-            const tbody = document.getElementById("dashboard-table-body");
-            if (!displayedMembers.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Aucun participant ne correspond aux filtres.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = displayedMembers.map((m, idx) => `
-                <tr class="clickable-row" onclick="ouvrirModaleMembre(${idx})">
-                    <td>
-                        <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="avatar-sm"
-                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
-                        <strong>${escapeHtml(m.name || "—")}</strong>
-                    </td>
-                    <td>${escapeHtml(m.titre || "—")}</td>
-                    <td>${escapeHtml(m.institution || "—")}</td>
-                    <td>${escapeHtml(m.regime || "Aucun")}</td>
-                    <td>${badgeStatutHTML(m.status)}</td>
-                </tr>
-            `).join("");
-        }
-
-        function construireCarteMembreModale(m) {
-            const statut = m.status || "Inscrit";
-            const arrivee = m.heureEntree || m.arrivee || "--:--";
-            const depart = m.heureSortie || m.depart || "--:--";
-            const datesTexte = (m._datesParticipation && m._datesParticipation.length)
-                ? m._datesParticipation.join(", ")
-                : "Non précisé";
-            const emailEnvoye = Boolean(m.emailEnvoye || m.confirmationSent || m.emailSent);
-
-            return `
-                <div class="modal-member-item">
-                    <div class="modal-member-left">
-                        <img src="${resoudrePhoto(m.photo)}" alt="${escapeHtml(m.name || "")}" class="modal-member-avatar"
-                             onerror="this.onerror=null;this.src='${LOGO_ASTER_URL}';">
-                        <div>
-                            <div class="modal-member-name">
-                                ${escapeHtml(m.name || "Membre")}
-                                ${m.memberId ? `<span class="modal-member-id">(${escapeHtml(m.memberId)})</span>` : ""}
-                            </div>
-                            <div class="modal-member-lines">
-                                <div>🏅 <span class="modal-field-label">Titre :</span> <strong>${escapeHtml(m.titre || "—")}</strong></div>
-                                <div>🏥 <span class="modal-field-label">Institution :</span> <strong>${escapeHtml(m.institution || "—")}</strong></div>
-                                <div>📧 <span class="modal-field-label">E-mail :</span> <strong>${escapeHtml(m.email || "—")}</strong></div>
-                                <div>🍽️ <span class="modal-field-label">Régime :</span> <strong>${escapeHtml(m.regime || "Aucun")}</strong></div>
-                                <div>📅 <span class="modal-field-label">Participation :</span> <strong>${escapeHtml(datesTexte)}</strong></div>
-                                <div>🕒 <span class="modal-field-label">Arrivée / Départ :</span> <strong>${escapeHtml(arrivee)} / ${escapeHtml(depart)}</strong></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-member-right">
-                        <div class="modal-member-top-status">
-                            ${badgeStatutHTML(statut)}
-                        </div>
-                        ${emailEnvoye
-                            ? `<span class="email-sent-badge">✉️ Email confirmation envoyé</span>`
-                            : `<span class="email-pending-badge">✉️ Email confirmation à envoyer</span>`
-                        }
-                    </div>
-                </div>
-            `;
-        }
-
-        function ouvrirModaleKPI(categorie) {
-            let liste = [];
-            let titre = "Participants";
-
-            if (categorie === "Présent") {
-                liste = allMembers.filter(m => m.status === "Présent");
-                titre = "Membres Présents";
-            } else if (categorie === "Sorti") {
-                liste = allMembers.filter(m => m.status === "Sorti");
-                titre = "Membres Sortis";
-            } else if (categorie === "Inscrit") {
-                liste = allMembers.filter(m => !m.status || m.status === "Inscrit");
-                titre = "Inscrits (en attente d'entrée)";
+        function appliquerModeMobileInitial() {
+            const saved = localStorage.getItem(MOBILE_STORAGE_KEY);
+            if (saved === "mobile" || (saved === null && window.innerWidth <= 640)) {
+                document.body.classList.add("mobile-mode");
             } else {
-                liste = allMembers.slice();
-                titre = "Tous les membres inscrits";
+                document.body.classList.remove("mobile-mode");
             }
-
-            document.getElementById("kpi-modal-title").textContent = titre;
-            document.getElementById("kpi-modal-count").textContent = `${liste.length} membre(s)`;
-            document.getElementById("kpi-modal-body").innerHTML = liste.length
-                ? liste.map(construireCarteMembreModale).join("")
-                : `<div class="empty-msg">Aucun membre dans cette catégorie.</div>`;
-            document.getElementById("kpi-modal").classList.add("active");
+            mettreAJourBoutonMobile();
         }
 
-        function ouvrirModaleMembre(index) {
-            const m = displayedMembers[index];
-            if (!m) return;
-
-            document.getElementById("kpi-modal-title").textContent = m.name || "Détails du membre";
-            document.getElementById("kpi-modal-count").textContent = m.memberId || "Fiche";
-            document.getElementById("kpi-modal-body").innerHTML = construireCarteMembreModale(m);
-            document.getElementById("kpi-modal").classList.add("active");
+        function basculerMobile() {
+            document.body.classList.toggle("mobile-mode");
+            localStorage.setItem(MOBILE_STORAGE_KEY, estModeMobile() ? "mobile" : "desktop");
+            mettreAJourBoutonMobile();
+            if (typeof renderCharts === "function") renderCharts();
         }
-
-        function fermerModaleKPI() {
-            document.getElementById("kpi-modal").classList.remove("active");
-        }
-
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") fermerModaleKPI();
-        });
-
-        document.getElementById("filter-search").addEventListener("input", appliquerFiltresTableau);
-        document.getElementById("filter-statut").addEventListener("change", appliquerFiltresTableau);
 
         window.addEventListener("DOMContentLoaded", () => {
             appliquerThemeInitial();
-            chargerDonnees();
+            appliquerModeMobileInitial();
+            if (typeof chargerDonnees === "function") chargerDonnees();
         });
     </script>
 </body>
