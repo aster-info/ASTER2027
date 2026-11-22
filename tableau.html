@@ -100,7 +100,7 @@
         }
 
         /* =====================================================================
-           RUBRIQUE 3 : EN-TÊTE, BARRE D'ACTIONS ET BOUTON THÈME EN BAS À DROITE
+           RUBRIQUE 3 : EN-TÊTE, BARRE D'ACTIONS ET BOUTONS EN BAS À DROITE
            ===================================================================== */
         .top-header {
             position: relative;
@@ -208,10 +208,17 @@
         }
         .btn-ghost:hover { background: var(--ghost-hover); }
 
-        .theme-toggle-btn {
+        .header-corner-controls {
             position: absolute;
             right: 20px;
             bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle-btn,
+        .mobile-toggle-btn {
             border: 1px solid var(--border);
             background: var(--card-soft);
             color: var(--text);
@@ -227,9 +234,16 @@
             transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
         }
 
-        .theme-toggle-btn:hover {
+        .theme-toggle-btn:hover,
+        .mobile-toggle-btn:hover {
             transform: translateY(-1px);
             background: var(--ghost-hover);
+        }
+
+        body.mobile-mode .mobile-toggle-btn {
+            background: var(--blue-soft);
+            color: var(--blue-text);
+            border-color: var(--primary);
         }
 
         /* =====================================================================
@@ -768,12 +782,92 @@
             display: flex;
             justify-content: flex-end;
         }
+
+        /* =====================================================================
+           RUBRIQUE 9 : MODE MOBILE / BUREAU FORÇABLE
+           ===================================================================== */
+        body.mobile-mode {
+            padding: 14px 10px 36px;
+        }
+
+        body.mobile-mode .container {
+            max-width: 480px;
+        }
+
+        body.mobile-mode .top-header {
+            padding: 16px 16px 52px;
+            border-radius: 18px;
+            gap: 14px;
+        }
+
+        body.mobile-mode .header-logo {
+            width: 54px;
+            height: 54px;
+        }
+
+        body.mobile-mode .brand-title {
+            font-size: 21px;
+        }
+
+        body.mobile-mode .header-actions {
+            width: 100%;
+        }
+
+        body.mobile-mode .header-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 9px 12px;
+            font-size: 13px;
+        }
+
+        body.mobile-mode .kpi-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        body.mobile-mode .charts-grid,
+        body.mobile-mode .bottom-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        body.mobile-mode .chart-card,
+        body.mobile-mode .panel-card {
+            padding: 16px;
+            border-radius: 18px;
+            min-height: 300px;
+        }
+
+        body.mobile-mode .members-table-wrap {
+            overflow-x: auto;
+        }
+
+        body.mobile-mode table {
+            min-width: 520px;
+            font-size: 12.5px;
+        }
+
+        body.mobile-mode .modal-member-item {
+            flex-direction: column;
+        }
+
+        body.mobile-mode .modal-member-right {
+            align-items: flex-start;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            width: 100%;
+        }
+
+        body.mobile-mode .modal-badges-stack {
+            align-items: flex-start;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- =================================================================
-             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD + BOUTON THÈME EN BAS À DROITE
+             RUBRIQUE 3 (HTML) : EN-TÊTE DASHBOARD + BOUTONS EN BAS À DROITE
              ================================================================= -->
         <header class="top-header">
             <div class="brand">
@@ -794,10 +888,16 @@
                 <a href="./admin4.html" class="btn btn-primary">🛡️ Vue Admin</a>
             </div>
 
-            <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="basculerTheme()" aria-label="Basculer mode sombre ou clair">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-label">Mode sombre</span>
-            </button>
+            <div class="header-corner-controls">
+                <button type="button" id="mobile-toggle-btn" class="mobile-toggle-btn" onclick="basculerMobile()" aria-label="Basculer version mobile ou bureau">
+                    <span id="mobile-icon">📱</span>
+                    <span id="mobile-label">Mobile</span>
+                </button>
+                <button type="button" id="theme-toggle-btn" class="theme-toggle-btn" onclick="basculerTheme()" aria-label="Basculer mode sombre ou clair">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-label">Mode sombre</span>
+                </button>
+            </div>
         </header>
 
         <!-- =================================================================
@@ -959,11 +1059,12 @@
 
     <script>
         /* =====================================================================
-           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME ET ÉTAT GLOBAL
+           RUBRIQUE 8 (JS) : CONFIGURATION, THÈME, MODE MOBILE & ÉTAT GLOBAL
            ===================================================================== */
         const LOGO_ASTER_URL = "./logo.png";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzqj1FoJn4hFvf2T3uLDMHIkXD3_Kqth5Q92FU3oU-CV0SYPfidVN8EhH2_yQIbb-Y/exec";
         const THEME_STORAGE_KEY = "aster_dashboard_theme";
+        const MOBILE_STORAGE_KEY = "aster_dashboard_mobile";
 
         let allMembers = [];
         let displayedMembers = [];
@@ -999,6 +1100,35 @@
             document.body.classList.toggle("dark-mode");
             localStorage.setItem(THEME_STORAGE_KEY, estModeSombre() ? "dark" : "light");
             mettreAJourBoutonTheme();
+            if (allMembers.length > 0) {
+                mettreAJourGraphiques(allMembers);
+            }
+        }
+
+        function estModeMobile() {
+            return document.body.classList.contains("mobile-mode");
+        }
+
+        function mettreAJourBoutonMobile() {
+            const mobile = estModeMobile();
+            document.getElementById("mobile-icon").textContent = mobile ? "🖥️" : "📱";
+            document.getElementById("mobile-label").textContent = mobile ? "Bureau" : "Mobile";
+        }
+
+        function appliquerModeMobileInitial() {
+            const saved = localStorage.getItem(MOBILE_STORAGE_KEY);
+            if (saved === "mobile" || (saved === null && window.innerWidth <= 640)) {
+                document.body.classList.add("mobile-mode");
+            } else {
+                document.body.classList.remove("mobile-mode");
+            }
+            mettreAJourBoutonMobile();
+        }
+
+        function basculerMobile() {
+            document.body.classList.toggle("mobile-mode");
+            localStorage.setItem(MOBILE_STORAGE_KEY, estModeMobile() ? "mobile" : "desktop");
+            mettreAJourBoutonMobile();
             if (allMembers.length > 0) {
                 mettreAJourGraphiques(allMembers);
             }
@@ -1512,6 +1642,7 @@
            ===================================================================== */
         window.onload = () => {
             appliquerThemeInitial();
+            appliquerModeMobileInitial();
             chargerDonnees();
             setInterval(chargerDonnees, 15000);
         };
